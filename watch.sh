@@ -1,2 +1,3 @@
-tsc -w &
-watchify .\\scripts\\javascript\\main.js -o .\\scripts\\javascript\\bundle.js
+tsc --build
+tsc --watch &
+watchify .\\scripts\\dev\\javascript\\main.js -o .\\scripts\\bundle.js
