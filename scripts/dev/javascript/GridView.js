@@ -7,8 +7,8 @@ var GridView = /** @class */ (function () {
         this.tileSize = tileSize;
         this.width = htmlCanvas.width;
         this.height = htmlCanvas.height;
-        this.xOffset = Math.floor(this.width % tileSize / 2);
-        this.yOffset = Math.floor(this.height % tileSize / 2);
+        this.offsetX = Math.floor(this.width % tileSize / 2);
+        this.offsetY = Math.floor(this.height % tileSize / 2);
         this.gridHeight = Math.floor(htmlCanvas.width / tileSize);
         this.gridWidth = Math.floor(htmlCanvas.height / tileSize);
         this.gridModel = gridModel;
@@ -30,8 +30,8 @@ var GridView = /** @class */ (function () {
             return;
         var tileType = this.gridModel.getTileAt(x, y);
         this.canvas.fillStyle = this.styleForTile(tileType);
-        var xStart = this.xOffset + (x * this.tileSize);
-        var yStart = this.yOffset + (y * this.tileSize);
+        var xStart = this.offsetX + (x * this.tileSize);
+        var yStart = this.offsetY + (y * this.tileSize);
         this.canvas.fillRect(xStart, yStart, this.tileSize, this.tileSize);
     };
     GridView.prototype.styleForTile = function (tileType) {
@@ -45,8 +45,8 @@ var GridView = /** @class */ (function () {
     GridView.prototype.manageOnClickEvent = function (event) {
         //console.log('GridCanvas click event in (' + event.clientX + ', ' + event.clientY + ')');
         if (this.ontileclick != null) {
-            var x = Math.floor((event.clientX - this.xOffset) / this.tileSize);
-            var y = Math.floor((event.clientY - this.yOffset) / this.tileSize);
+            var x = Math.floor((event.offsetX - this.offsetX) / this.tileSize);
+            var y = Math.floor((event.offsetY - this.offsetY) / this.tileSize);
             if (x < 0 || x >= this.gridWidth)
                 return;
             if (y < 0 || y >= this.gridHeight)

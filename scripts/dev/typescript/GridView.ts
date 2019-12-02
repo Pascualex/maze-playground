@@ -7,8 +7,8 @@ export class GridView {
   private tileSize: number;
   private width: number;
   private height: number;
-  private xOffset: number;
-  private yOffset: number;
+  private offsetX: number;
+  private offsetY: number;
 
   private gridHeight: number;
   private gridWidth: number;
@@ -23,8 +23,8 @@ export class GridView {
     this.tileSize = tileSize;
     this.width = htmlCanvas.width;
     this.height = htmlCanvas.height;
-    this.xOffset = Math.floor(this.width % tileSize / 2);
-    this.yOffset = Math.floor(this.height % tileSize / 2);
+    this.offsetX = Math.floor(this.width % tileSize / 2);
+    this.offsetY = Math.floor(this.height % tileSize / 2);
     
     this.gridHeight = Math.floor(htmlCanvas.width / tileSize);
     this.gridWidth = Math.floor(htmlCanvas.height / tileSize);
@@ -50,8 +50,8 @@ export class GridView {
     const tileType: TileType = this.gridModel.getTileAt(x, y)!;
     this.canvas.fillStyle = this.styleForTile(tileType);
 
-    const xStart: number = this.xOffset + (x * this.tileSize);
-    const yStart: number = this.yOffset + (y * this.tileSize);
+    const xStart: number = this.offsetX + (x * this.tileSize);
+    const yStart: number = this.offsetY + (y * this.tileSize);
     this.canvas.fillRect(xStart, yStart, this.tileSize, this.tileSize);
   }
 
@@ -66,8 +66,8 @@ export class GridView {
   private manageOnClickEvent(event: MouseEvent): void {
     //console.log('GridCanvas click event in (' + event.clientX + ', ' + event.clientY + ')');
     if (this.ontileclick != null) {
-      const x = Math.floor((event.clientX - this.xOffset) / this.tileSize);
-      const y = Math.floor((event.clientY - this.yOffset) / this.tileSize);  
+      const x = Math.floor((event.offsetX - this.offsetX) / this.tileSize);
+      const y = Math.floor((event.offsetY - this.offsetY) / this.tileSize);  
       
       if (x < 0 || x >= this.gridWidth) return;
       if (y < 0 || y >= this.gridHeight) return;
