@@ -35,8 +35,11 @@ var Grid = /** @class */ (function () {
         }
     };
     Grid.prototype.manageOnTileClickEvent = function (x, y) {
-        this.gridModel.setTileAt(x, y, this.currentTileType);
-        this.gridView.paintTileAndNeighbours(x, y);
+        var tileType = this.gridModel.getTileAt(x, y);
+        if (tileType != null && tileType != this.currentTileType) {
+            this.gridModel.setTileAt(x, y, this.currentTileType);
+            this.gridView.paintTileAndNeighbours(x, y);
+        }
     };
     return Grid;
 }());
@@ -290,9 +293,8 @@ var grid;
 window.onload = function () {
     var htmlGrid = document.getElementById("grid");
     if (htmlGrid != null && htmlGrid instanceof HTMLCanvasElement) {
-        htmlGrid.width = window.innerWidth - 3;
-        htmlGrid.height = window.innerHeight - 3;
-        console.log('width', window.innerWidth, 'height', window.innerHeight);
+        htmlGrid.width = window.innerWidth - 4;
+        htmlGrid.height = window.innerHeight - 4;
         grid = new Grid_1.Grid(htmlGrid, 32);
     }
 };

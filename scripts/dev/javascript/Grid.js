@@ -34,8 +34,11 @@ var Grid = /** @class */ (function () {
         }
     };
     Grid.prototype.manageOnTileClickEvent = function (x, y) {
-        this.gridModel.setTileAt(x, y, this.currentTileType);
-        this.gridView.paintTileAndNeighbours(x, y);
+        var tileType = this.gridModel.getTileAt(x, y);
+        if (tileType != null && tileType != this.currentTileType) {
+            this.gridModel.setTileAt(x, y, this.currentTileType);
+            this.gridView.paintTileAndNeighbours(x, y);
+        }
     };
     return Grid;
 }());

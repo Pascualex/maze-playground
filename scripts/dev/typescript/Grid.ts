@@ -41,7 +41,10 @@ export class Grid {
   }
 
   private manageOnTileClickEvent(x: number, y: number): void {
-    this.gridModel.setTileAt(x, y, this.currentTileType);
-    this.gridView.paintTileAndNeighbours(x, y);
+    const tileType: TileType | null = this.gridModel.getTileAt(x, y);
+    if (tileType != null && tileType != this.currentTileType) {
+      this.gridModel.setTileAt(x, y, this.currentTileType);
+      this.gridView.paintTileAndNeighbours(x, y);
+    }
   }
 }
