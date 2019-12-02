@@ -17,7 +17,7 @@ export class Grid {
     this.currentTileType = TileType.Floor;
 
     this.setupEvents();
-    this.paint();
+    this.gridView.paint();
   }
 
   private setupEvents() {
@@ -43,13 +43,5 @@ export class Grid {
   private manageOnTileClickEvent(x: number, y: number): void {
     this.gridModel.setTileAt(x, y, this.currentTileType);
     this.gridView.paintTile(x, y);
-  }
-
-  private paint(): void {
-    for (let i = 0; i < this.gridModel.getHeight(); i++) {
-      for (let j = 0; j < this.gridModel.getWidth(); j++) {
-        this.gridView.paintTile(j, i);
-      }
-    }
   }
 }

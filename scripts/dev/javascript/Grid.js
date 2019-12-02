@@ -11,7 +11,7 @@ var Grid = /** @class */ (function () {
         this.gridView = new GridView_1.GridView(htmlCanvas, tileSize, this.gridModel);
         this.currentTileType = TileType_1.TileType.Floor;
         this.setupEvents();
-        this.paint();
+        this.gridView.paint();
     }
     Grid.prototype.setupEvents = function () {
         var _this = this;
@@ -36,13 +36,6 @@ var Grid = /** @class */ (function () {
     Grid.prototype.manageOnTileClickEvent = function (x, y) {
         this.gridModel.setTileAt(x, y, this.currentTileType);
         this.gridView.paintTile(x, y);
-    };
-    Grid.prototype.paint = function () {
-        for (var i = 0; i < this.gridModel.getHeight(); i++) {
-            for (var j = 0; j < this.gridModel.getWidth(); j++) {
-                this.gridView.paintTile(j, i);
-            }
-        }
     };
     return Grid;
 }());
