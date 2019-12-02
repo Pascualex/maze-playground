@@ -12,13 +12,24 @@ var GridView = /** @class */ (function () {
         this.gridHeight = Math.floor(htmlCanvas.width / tileSize);
         this.gridWidth = Math.floor(htmlCanvas.height / tileSize);
         this.gridModel = gridModel;
+        this.mousePressed = false;
+        this.ontiletypeselect = null;
         this.ontileclick = null;
         this.setupEvents(htmlCanvas);
     }
     GridView.prototype.setupEvents = function (htmlCanvas) {
         var _this = this;
-        htmlCanvas.onclick = function (event) {
-            _this.manageOnClickEvent(event);
+        htmlCanvas.onmousedown = function (event) {
+            _this.handleOnMouseDownEvent(event);
+        };
+        htmlCanvas.onmousemove = function (event) {
+            _this.handleOnMouseMoveEvent(event);
+        };
+        htmlCanvas.onmouseup = function (event) {
+            _this.handleOnMouseUpEvent(event);
+        };
+        htmlCanvas.onmouseleave = function (event) {
+            _this.handleOnMouseLeaveEvent(event);
         };
     };
     GridView.prototype.paintTile = function (x, y) {
@@ -42,8 +53,34 @@ var GridView = /** @class */ (function () {
             return '#000000';
         }
     };
-    GridView.prototype.manageOnClickEvent = function (event) {
-        //console.log('GridCanvas click event in (' + event.clientX + ', ' + event.clientY + ')');
+    GridView.prototype.handleOnMouseDownEvent = function (event) {
+        this.mousePressed = true;
+        this.triggerOnTileTypeSelectEvent(event);
+        this.triggerOnTileClickEvent(event);
+    };
+    GridView.prototype.handleOnMouseMoveEvent = function (event) {
+        if (this.mousePressed) {
+            this.triggerOnTileClickEvent(event);
+        }
+    };
+    GridView.prototype.handleOnMouseUpEvent = function (event) {
+        this.mousePressed = false;
+    };
+    GridView.prototype.handleOnMouseLeaveEvent = function (event) {
+        this.mousePressed = false;
+    };
+    GridView.prototype.triggerOnTileTypeSelectEvent = function (event) {
+        if (this.ontiletypeselect != null) {
+            var x = Math.floor((event.offsetX - this.offsetX) / this.tileSize);
+            var y = Math.floor((event.offsetY - this.offsetY) / this.tileSize);
+            if (x < 0 || x >= this.gridWidth)
+                return;
+            if (y < 0 || y >= this.gridHeight)
+                return;
+            this.ontiletypeselect(x, y);
+        }
+    };
+    GridView.prototype.triggerOnTileClickEvent = function (event) {
         if (this.ontileclick != null) {
             var x = Math.floor((event.offsetX - this.offsetX) / this.tileSize);
             var y = Math.floor((event.offsetY - this.offsetY) / this.tileSize);
