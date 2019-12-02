@@ -17,13 +17,13 @@ var Grid = /** @class */ (function () {
     Grid.prototype.setupEvents = function () {
         var _this = this;
         this.gridView.ontiletypeselect = function (x, y) {
-            _this.manageOnTileTypeSelectEvent(x, y);
+            _this.handleOnTileTypeSelectEvent(x, y);
         };
         this.gridView.ontileclick = function (x, y) {
-            _this.manageOnTileClickEvent(x, y);
+            _this.handleOnTileClickEvent(x, y);
         };
     };
-    Grid.prototype.manageOnTileTypeSelectEvent = function (x, y) {
+    Grid.prototype.handleOnTileTypeSelectEvent = function (x, y) {
         var newTileType = this.gridModel.getTileAt(x, y);
         if (newTileType != null) {
             if (newTileType == TileType_1.TileType.Floor) {
@@ -34,7 +34,7 @@ var Grid = /** @class */ (function () {
             }
         }
     };
-    Grid.prototype.manageOnTileClickEvent = function (x, y) {
+    Grid.prototype.handleOnTileClickEvent = function (x, y) {
         var tileType = this.gridModel.getTileAt(x, y);
         if (tileType != null && tileType != this.currentTileType) {
             this.gridModel.setTileAt(x, y, this.currentTileType);

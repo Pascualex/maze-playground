@@ -22,14 +22,14 @@ export class Grid {
 
   private setupEvents() {
     this.gridView.ontiletypeselect = (x: number, y: number) => {
-      this.manageOnTileTypeSelectEvent(x, y);
+      this.handleOnTileTypeSelectEvent(x, y);
     };
     this.gridView.ontileclick = (x: number, y: number) => {
-      this.manageOnTileClickEvent(x, y);
+      this.handleOnTileClickEvent(x, y);
     };
   }
 
-  private manageOnTileTypeSelectEvent(x: number, y: number): void {
+  private handleOnTileTypeSelectEvent(x: number, y: number): void {
     const newTileType: TileType | null = this.gridModel.getTileAt(x, y);
     if (newTileType != null) {
       if (newTileType == TileType.Floor) {
@@ -40,7 +40,7 @@ export class Grid {
     }
   }
 
-  private manageOnTileClickEvent(x: number, y: number): void {
+  private handleOnTileClickEvent(x: number, y: number): void {
     const tileType: TileType | null = this.gridModel.getTileAt(x, y);
     if (tileType != null && tileType != this.currentTileType) {
       this.gridModel.setTileAt(x, y, this.currentTileType);
