@@ -8,8 +8,8 @@ export class Grid {
   private currentTileType: TileType;
 
   constructor(htmlCanvas: HTMLCanvasElement, tileSize: number) {
-    const gridHeight = Math.floor(htmlCanvas.width / tileSize);
-    const gridWidth = Math.floor(htmlCanvas.height / tileSize);
+    const gridHeight = Math.floor((htmlCanvas.width - 1) / (tileSize + 1));
+    const gridWidth = Math.floor((htmlCanvas.height - 1) / (tileSize + 1));
 
     this.gridModel = new GridModel(gridHeight, gridWidth);
     this.gridView = new GridView(htmlCanvas, tileSize, this.gridModel);
@@ -42,6 +42,6 @@ export class Grid {
 
   private manageOnTileClickEvent(x: number, y: number): void {
     this.gridModel.setTileAt(x, y, this.currentTileType);
-    this.gridView.paintTile(x, y);
+    this.gridView.paintTileAndNeighbours(x, y);
   }
 }

@@ -29,8 +29,8 @@ export class GridView {
     this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
     this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
     
-    this.gridHeight = Math.floor((this.width - 1) / (tileSize + 1));
-    this.gridWidth = Math.floor((this.height - 1) / (tileSize + 1));
+    this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
+    this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
 
     this.gridModel = gridModel;
 
@@ -66,6 +66,14 @@ export class GridView {
     }
   }
 
+  public paintTileAndNeighbours(x: number, y: number): void {
+    this.paintTile(x, y);
+    this.paintTile(x, y - 1);
+    this.paintTile(x + 1, y);
+    this.paintTile(x, y + 1);
+    this.paintTile(x - 1, y);
+  }
+
   public paintTile(x: number, y: number): void {
     if (this.canvas == null) return;
     if (x < 0 || x >= this.gridWidth) return;
@@ -80,36 +88,70 @@ export class GridView {
     if (tileType == TileType.Wall) {
       this.canvas.fillStyle = '#0c264a';
       this.canvas.fillRect(xStart, yStart, xSize, ySize);
+      this.canvas.fillStyle = '#42eb3f';
+      this.printWallDetail(x, y);
     } else {
-      let xStartOffset = 0;
-      let yStartOffset = 0;
-      let xSizeOffset = 0;
-      let ySizeOffSet = 0;
-      
-      if (this.gridModel.getTileAt(x, y-1) == TileType.Wall) {
-        yStartOffset++;
-        ySizeOffSet++;
-      }
-      if (this.gridModel.getTileAt(x+1, y) == TileType.Wall) {
-        xSizeOffset++;
-      }
-      if (this.gridModel.getTileAt(x, y+1) == TileType.Wall) {
-        ySizeOffSet++;
-      }
-      if (this.gridModel.getTileAt(x-1, y) == TileType.Wall) {
-        xStartOffset++;
-        xSizeOffset++;
-      }
-
-      this.canvas.fillStyle = '#6da6b3';
-      const finalXStart = xStart + xStartOffset;
-      const finalYStart = yStart + yStartOffset;
-      const finalXSize = xSize - xSizeOffset;
-      const finalYSize = ySize - ySizeOffSet;
-      this.canvas.fillRect(finalXStart, finalYStart, finalXSize, finalYSize);
-
+      this.clearTile(x, y);
       this.canvas.fillStyle = '#FFFFFF';
       this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+    }
+  }
+
+  private clearTile(x: number, y: number): void {
+    if (this.canvas == null) return;
+    if (x < 0 || x >= this.gridWidth) return;
+    if (y < 0 || y >= this.gridHeight) return;
+
+    let xStart: number = this.tileToCoordinateX(x);
+    let yStart: number = this.tileToCoordinateY(y);
+    let xSize: number = this.tileSize + 2;
+    let ySize: number = this.tileSize + 2;
+    
+    if (this.gridModel.getTileAt(x, y - 1) == TileType.Wall) {
+      yStart++;
+      ySize--;
+    }
+    if (this.gridModel.getTileAt(x + 1, y) == TileType.Wall) {
+      xSize--;
+    }
+    if (this.gridModel.getTileAt(x, y + 1) == TileType.Wall) {
+      ySize--;
+    }
+    if (this.gridModel.getTileAt(x - 1, y) == TileType.Wall) {
+      xStart++;
+      xSize--;
+    }
+
+    this.canvas.fillStyle = '#6da6b3';
+    this.canvas.fillRect(xStart, yStart, xSize, ySize);
+  }
+
+  private printWallDetail(x: number, y: number) {
+    if (this.canvas == null) return;
+    if (x < 0 || x >= this.gridWidth) return;
+    if (y < 0 || y >= this.gridHeight) return;
+
+    const xStart: number = this.tileToCoordinateX(x);
+    const yStart: number = this.tileToCoordinateY(y);
+    const xSize: number = this.tileSize + 2;
+    const ySize: number = this.tileSize + 2;
+
+    const top: boolean = (this.gridModel.getTileAt(x, y - 1) == TileType.Wall);
+    const right: boolean = (this.gridModel.getTileAt(x + 1, y) == TileType.Wall);
+    const bottom: boolean = (this.gridModel.getTileAt(x, y + 1) == TileType.Wall);
+    const left: boolean = (this.gridModel.getTileAt(x - 1, y) == TileType.Wall);
+
+    this.canvas.fillStyle = '#3af0c8';
+    if (right && left && !top && !bottom) {
+      this.canvas.fillRect(xStart, yStart + 15, xSize, ySize - 30);
+    } else if (top && bottom && !right && !left) {
+      this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize);
+    } else {
+      this.canvas.fillRect(xStart + 13, yStart + 13, xSize - 26, ySize - 26);
+      if (top) this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 23);
+      if (right) this.canvas.fillRect(xStart + 23, yStart + 15, xSize - 23, ySize - 30);
+      if (bottom) this.canvas.fillRect(xStart + 15, yStart + 23, xSize - 30, ySize - 23);
+      if (left) this.canvas.fillRect(xStart, yStart + 15, xSize - 23, ySize - 30);
     }
   }
 

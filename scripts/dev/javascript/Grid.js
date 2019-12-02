@@ -5,8 +5,8 @@ var GridView_1 = require("./GridView");
 var TileType_1 = require("./TileType");
 var Grid = /** @class */ (function () {
     function Grid(htmlCanvas, tileSize) {
-        var gridHeight = Math.floor(htmlCanvas.width / tileSize);
-        var gridWidth = Math.floor(htmlCanvas.height / tileSize);
+        var gridHeight = Math.floor((htmlCanvas.width - 1) / (tileSize + 1));
+        var gridWidth = Math.floor((htmlCanvas.height - 1) / (tileSize + 1));
         this.gridModel = new GridModel_1.GridModel(gridHeight, gridWidth);
         this.gridView = new GridView_1.GridView(htmlCanvas, tileSize, this.gridModel);
         this.currentTileType = TileType_1.TileType.Floor;
@@ -35,7 +35,7 @@ var Grid = /** @class */ (function () {
     };
     Grid.prototype.manageOnTileClickEvent = function (x, y) {
         this.gridModel.setTileAt(x, y, this.currentTileType);
-        this.gridView.paintTile(x, y);
+        this.gridView.paintTileAndNeighbours(x, y);
     };
     return Grid;
 }());

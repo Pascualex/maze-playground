@@ -6,8 +6,8 @@ var GridView_1 = require("./GridView");
 var TileType_1 = require("./TileType");
 var Grid = /** @class */ (function () {
     function Grid(htmlCanvas, tileSize) {
-        var gridHeight = Math.floor(htmlCanvas.width / tileSize);
-        var gridWidth = Math.floor(htmlCanvas.height / tileSize);
+        var gridHeight = Math.floor((htmlCanvas.width - 1) / (tileSize + 1));
+        var gridWidth = Math.floor((htmlCanvas.height - 1) / (tileSize + 1));
         this.gridModel = new GridModel_1.GridModel(gridHeight, gridWidth);
         this.gridView = new GridView_1.GridView(htmlCanvas, tileSize, this.gridModel);
         this.currentTileType = TileType_1.TileType.Floor;
@@ -36,7 +36,7 @@ var Grid = /** @class */ (function () {
     };
     Grid.prototype.manageOnTileClickEvent = function (x, y) {
         this.gridModel.setTileAt(x, y, this.currentTileType);
-        this.gridView.paintTile(x, y);
+        this.gridView.paintTileAndNeighbours(x, y);
     };
     return Grid;
 }());
@@ -94,8 +94,8 @@ var GridView = /** @class */ (function () {
         this.height = htmlCanvas.height;
         this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
         this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
-        this.gridHeight = Math.floor((this.width - 1) / (tileSize + 1));
-        this.gridWidth = Math.floor((this.height - 1) / (tileSize + 1));
+        this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
+        this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
         this.gridModel = gridModel;
         this.mousePressed = false;
         this.ontiletypeselect = null;
@@ -126,6 +126,13 @@ var GridView = /** @class */ (function () {
             }
         }
     };
+    GridView.prototype.paintTileAndNeighbours = function (x, y) {
+        this.paintTile(x, y);
+        this.paintTile(x, y - 1);
+        this.paintTile(x + 1, y);
+        this.paintTile(x, y + 1);
+        this.paintTile(x - 1, y);
+    };
     GridView.prototype.paintTile = function (x, y) {
         if (this.canvas == null)
             return;
@@ -141,34 +148,75 @@ var GridView = /** @class */ (function () {
         if (tileType == TileType_1.TileType.Wall) {
             this.canvas.fillStyle = '#0c264a';
             this.canvas.fillRect(xStart, yStart, xSize, ySize);
+            this.canvas.fillStyle = '#42eb3f';
+            this.printWallDetail(x, y);
         }
         else {
-            var xStartOffset = 0;
-            var yStartOffset = 0;
-            var xSizeOffset = 0;
-            var ySizeOffSet = 0;
-            if (this.gridModel.getTileAt(x, y - 1) == TileType_1.TileType.Wall) {
-                yStartOffset++;
-                ySizeOffSet++;
-            }
-            if (this.gridModel.getTileAt(x + 1, y) == TileType_1.TileType.Wall) {
-                xSizeOffset++;
-            }
-            if (this.gridModel.getTileAt(x, y + 1) == TileType_1.TileType.Wall) {
-                ySizeOffSet++;
-            }
-            if (this.gridModel.getTileAt(x - 1, y) == TileType_1.TileType.Wall) {
-                xStartOffset++;
-                xSizeOffset++;
-            }
-            this.canvas.fillStyle = '#6da6b3';
-            var finalXStart = xStart + xStartOffset;
-            var finalYStart = yStart + yStartOffset;
-            var finalXSize = xSize - xSizeOffset;
-            var finalYSize = ySize - ySizeOffSet;
-            this.canvas.fillRect(finalXStart, finalYStart, finalXSize, finalYSize);
+            this.clearTile(x, y);
             this.canvas.fillStyle = '#FFFFFF';
             this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+        }
+    };
+    GridView.prototype.clearTile = function (x, y) {
+        if (this.canvas == null)
+            return;
+        if (x < 0 || x >= this.gridWidth)
+            return;
+        if (y < 0 || y >= this.gridHeight)
+            return;
+        var xStart = this.tileToCoordinateX(x);
+        var yStart = this.tileToCoordinateY(y);
+        var xSize = this.tileSize + 2;
+        var ySize = this.tileSize + 2;
+        if (this.gridModel.getTileAt(x, y - 1) == TileType_1.TileType.Wall) {
+            yStart++;
+            ySize--;
+        }
+        if (this.gridModel.getTileAt(x + 1, y) == TileType_1.TileType.Wall) {
+            xSize--;
+        }
+        if (this.gridModel.getTileAt(x, y + 1) == TileType_1.TileType.Wall) {
+            ySize--;
+        }
+        if (this.gridModel.getTileAt(x - 1, y) == TileType_1.TileType.Wall) {
+            xStart++;
+            xSize--;
+        }
+        this.canvas.fillStyle = '#6da6b3';
+        this.canvas.fillRect(xStart, yStart, xSize, ySize);
+    };
+    GridView.prototype.printWallDetail = function (x, y) {
+        if (this.canvas == null)
+            return;
+        if (x < 0 || x >= this.gridWidth)
+            return;
+        if (y < 0 || y >= this.gridHeight)
+            return;
+        var xStart = this.tileToCoordinateX(x);
+        var yStart = this.tileToCoordinateY(y);
+        var xSize = this.tileSize + 2;
+        var ySize = this.tileSize + 2;
+        var top = (this.gridModel.getTileAt(x, y - 1) == TileType_1.TileType.Wall);
+        var right = (this.gridModel.getTileAt(x + 1, y) == TileType_1.TileType.Wall);
+        var bottom = (this.gridModel.getTileAt(x, y + 1) == TileType_1.TileType.Wall);
+        var left = (this.gridModel.getTileAt(x - 1, y) == TileType_1.TileType.Wall);
+        this.canvas.fillStyle = '#3af0c8';
+        if (right && left && !top && !bottom) {
+            this.canvas.fillRect(xStart, yStart + 15, xSize, ySize - 30);
+        }
+        else if (top && bottom && !right && !left) {
+            this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize);
+        }
+        else {
+            this.canvas.fillRect(xStart + 13, yStart + 13, xSize - 26, ySize - 26);
+            if (top)
+                this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 23);
+            if (right)
+                this.canvas.fillRect(xStart + 23, yStart + 15, xSize - 23, ySize - 30);
+            if (bottom)
+                this.canvas.fillRect(xStart + 15, yStart + 23, xSize - 30, ySize - 23);
+            if (left)
+                this.canvas.fillRect(xStart, yStart + 15, xSize - 23, ySize - 30);
         }
     };
     GridView.prototype.tileToCoordinateX = function (x) {
@@ -242,6 +290,9 @@ var grid;
 window.onload = function () {
     var htmlGrid = document.getElementById("grid");
     if (htmlGrid != null && htmlGrid instanceof HTMLCanvasElement) {
+        htmlGrid.width = window.innerWidth - 3;
+        htmlGrid.height = window.innerHeight - 3;
+        console.log('width', window.innerWidth, 'height', window.innerHeight);
         grid = new Grid_1.Grid(htmlGrid, 32);
     }
 };
