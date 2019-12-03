@@ -56,25 +56,25 @@ export class GridView {
     };
   }
 
-  public paint(): void {
+  public draw(): void {
     if (this.canvas == null) return;
 
     for (let i = 0; i < this.gridModel.getHeight(); i++) {
       for (let j = 0; j < this.gridModel.getWidth(); j++) {
-        this.paintTile(j, i);
+        this.drawTile(j, i);
       }
     }
   }
 
-  public paintTileAndNeighbours(x: number, y: number): void {
-    this.paintTile(x, y);
-    this.paintTile(x, y - 1);
-    this.paintTile(x + 1, y);
-    this.paintTile(x, y + 1);
-    this.paintTile(x - 1, y);
+  public drawTileAndNeighbours(x: number, y: number): void {
+    this.drawTile(x, y);
+    this.drawTile(x, y - 1);
+    this.drawTile(x + 1, y);
+    this.drawTile(x, y + 1);
+    this.drawTile(x - 1, y);
   }
 
-  public paintTile(x: number, y: number): void {
+  public drawTile(x: number, y: number): void {
     if (this.canvas == null) return;
     if (x < 0 || x >= this.gridWidth) return;
     if (y < 0 || y >= this.gridHeight) return;
@@ -90,10 +90,45 @@ export class GridView {
       this.canvas.fillRect(xStart, yStart, xSize, ySize);
       this.canvas.fillStyle = '#42eb3f';
       this.printWallDetail(x, y);
-    } else {
+    } else if (tileType == TileType.Floor) {
       this.clearTile(x, y);
-      this.canvas.fillStyle = '#FFFFFF';
+      this.canvas.fillStyle = '#ffffff';
       this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+    } else if (tileType == TileType.Entry) {
+      this.clearTile(x, y);
+      this.canvas.fillStyle = '#ffffff';
+      this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 14, 0, 2 * Math.PI);
+      this.canvas.fillStyle = '#0c264a';
+      this.canvas.fill();
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 10, 0, 2 * Math.PI);
+      this.canvas.fillStyle = '#30b348';
+      this.canvas.fill();
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 4, 0, 2 * Math.PI);
+      this.canvas.fillStyle = '#0c264a';
+      this.canvas.fill();
+    } else if (tileType == TileType.Exit) {
+      this.clearTile(x, y);
+      this.canvas.fillStyle = '#ffffff';
+      this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 14, 0, 2 * Math.PI);
+      this.canvas.fillStyle = '#0c264a';
+      this.canvas.fill();
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 10, 0, 2 * Math.PI);
+      this.canvas.fillStyle = '#f71b39';
+      this.canvas.fill();
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 4, 0, 2 * Math.PI);
+      this.canvas.fillStyle = '#0c264a';
+      this.canvas.fill();
+    } else {
+      this.canvas.fillStyle = '#f01fff';
+      this.canvas.fillRect(xStart, yStart, xSize, ySize);
     }
   }
 
