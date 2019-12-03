@@ -416,12 +416,43 @@ var grid;
 function createGrid() {
     var htmlGrid = document.getElementById("grid");
     if (htmlGrid != null && htmlGrid instanceof HTMLCanvasElement) {
+        setupCanvas(htmlGrid);
         htmlGrid.width = window.innerWidth - 4;
         htmlGrid.height = window.innerHeight - 4;
         grid = new Grid_1.Grid(htmlGrid, 32);
     }
     else {
         grid = null;
+    }
+}
+function setupCanvas(htmlGrid) {
+    htmlGrid.addEventListener("touchstart", function (e) {
+        var mousePos = getTouchPos(htmlGrid, e);
+        var touch = e.touches[0];
+        var mouseEvent = new MouseEvent("mousedown", {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        htmlGrid.dispatchEvent(mouseEvent);
+    }, false);
+    htmlGrid.addEventListener("touchend", function (e) {
+        var mouseEvent = new MouseEvent("mouseup", {});
+        htmlGrid.dispatchEvent(mouseEvent);
+    }, false);
+    htmlGrid.addEventListener("touchmove", function (e) {
+        var touch = e.touches[0];
+        var mouseEvent = new MouseEvent("mousemove", {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        htmlGrid.dispatchEvent(mouseEvent);
+    }, false);
+    function getTouchPos(canvasDom, touchEvent) {
+        var rect = canvasDom.getBoundingClientRect();
+        return {
+            x: touchEvent.touches[0].clientX - rect.left,
+            y: touchEvent.touches[0].clientY - rect.top
+        };
     }
 }
 window.onload = function () {
