@@ -215,6 +215,17 @@ export class GridView {
   private handleOnMouseMoveEvent(event: MouseEvent): void {
     if (this.mousePressed) {
       this.triggerOnTileClickEvent(event);
+    } else {
+      const x = this.coordinateXToTile(event.offsetX);
+      const y = this.coordinateYToTile(event.offsetY);
+  
+      const tileType: TileType | null = this.gridModel.getTileAt(x, y);
+  
+      if (tileType == TileType.Entry || tileType == TileType.Exit) {
+        document.body.style.cursor = 'pointer';
+      } else {
+        document.body.style.cursor = 'default';
+      }      
     }
   }
 

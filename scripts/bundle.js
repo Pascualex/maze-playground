@@ -364,6 +364,17 @@ var GridView = /** @class */ (function () {
         if (this.mousePressed) {
             this.triggerOnTileClickEvent(event);
         }
+        else {
+            var x = this.coordinateXToTile(event.offsetX);
+            var y = this.coordinateYToTile(event.offsetY);
+            var tileType = this.gridModel.getTileAt(x, y);
+            if (tileType == TileType_1.TileType.Entry || tileType == TileType_1.TileType.Exit) {
+                document.body.style.cursor = 'pointer';
+            }
+            else {
+                document.body.style.cursor = 'default';
+            }
+        }
     };
     GridView.prototype.handleOnMouseUpEvent = function (event) {
         this.mousePressed = false;
