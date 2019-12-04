@@ -16,6 +16,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: white;
+  overflow: hidden;
 }
 
 p {
@@ -37,6 +38,8 @@ a {
 #resize-message {
   display: none;
   position: absolute;
+  width: 250px;
+  max-width: 90%;
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);

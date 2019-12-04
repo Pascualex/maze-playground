@@ -57,13 +57,13 @@ export class Grid {
       const oldEntryTileY = this.gridModel.getExtryTileY();
       this.gridModel.setTileAt(x, y, TileType.Entry);
       this.gridView.drawTileAndNeighbours(x, y);
-      this.gridView.drawTile(oldEntryTileX, oldEntryTileY);
+      this.gridView.drawTileAndNeighbours(oldEntryTileX, oldEntryTileY);
     } else if (this.currentTileType == TileType.Exit) {
       const oldExitTileX = this.gridModel.getExitTileX();
       const oldExitTileY = this.gridModel.getExitTileY();
       this.gridModel.setTileAt(x, y, TileType.Exit);
-      this.gridView.drawTileAndNeighbours(x, y);
-      this.gridView.drawTile(oldExitTileX, oldExitTileY);      
+      this.gridView.drawTileAndNeighbours(x, y);  
+      this.gridView.drawTileAndNeighbours(oldExitTileX, oldExitTileY);      
     } else {
       this.gridModel.setTileAt(x, y, this.currentTileType);
       this.gridView.drawTileAndNeighbours(x, y);

@@ -1,4 +1,4 @@
-import { TileType } from './TileType'
+import { TileType } from './TileType';
 
 export class GridModel {
   private width: number;
@@ -6,8 +6,10 @@ export class GridModel {
   private tiles: TileType[][];
   private entryTileX!: number;
   private entryTileY!: number;
+  private entryPreviousTile!: TileType;
   private exitTileX!: number;
   private exitTileY!: number;
+  private exitPreviousTile!: TileType;
 
   constructor(width: number, height: number) {
     this.width = width;
@@ -28,14 +30,16 @@ export class GridModel {
     if (this.width < 5) return;
     if (this.height < 1) return;
 
-    const xCenter: number = Math.floor((this.width - 1)/2);
-    const yCenter: number = Math.floor((this.height - 1)/2);
+    const xCenter: number = Math.floor((this.width - 1) / 2);
+    const yCenter: number = Math.floor((this.height - 1) / 2);
 
     this.entryTileX = xCenter - 2;
     this.entryTileY = yCenter;
-    if ((this.width % 2) == 0) this.exitTileX = xCenter + 3;
-    else this.exitTileX = xCenter + 2;
+    this.entryPreviousTile = TileType.Floor;
+
+    this.exitTileX = xCenter + 3 - (this.width % 2);
     this.exitTileY = yCenter;
+    this.exitPreviousTile = TileType.Floor;
     
     this.tiles[this.entryTileY][this.entryTileX] = TileType.Entry;
     this.tiles[this.exitTileY][this.exitTileX] = TileType.Exit;
@@ -61,9 +65,10 @@ export class GridModel {
     if (x < 0 || x >= this.width) return;
     if (y < 0 || y >= this.height) return;
 
-    this.tiles[this.entryTileY][this.entryTileX] = TileType.Floor;
+    this.tiles[this.entryTileY][this.entryTileX] = this.entryPreviousTile;
     this.entryTileX = x;
     this.entryTileY = y;
+    this.entryPreviousTile = this.tiles[y][x];
     this.tiles[y][x] = TileType.Entry;
   }
 
@@ -71,9 +76,10 @@ export class GridModel {
     if (x < 0 || x >= this.width) return;
     if (y < 0 || y >= this.height) return;
 
-    this.tiles[this.exitTileY][this.exitTileX] = TileType.Floor;
+    this.tiles[this.exitTileY][this.exitTileX] = this.exitPreviousTile;
     this.exitTileX = x;
     this.exitTileY = y;
+    this.exitPreviousTile = this.tiles[y][x];
     this.tiles[y][x] = TileType.Exit;
   }
 

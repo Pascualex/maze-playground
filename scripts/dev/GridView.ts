@@ -1,6 +1,11 @@
 import { GridModel } from './GridModel';
 import { TileType } from './TileType';
 
+interface Coordinates {
+  x: number;
+  y: number;
+}
+
 export class GridView {
   private canvas: CanvasRenderingContext2D | null;
 
@@ -16,6 +21,8 @@ export class GridView {
   private gridModel: GridModel;
 
   private mousePressed: boolean;
+  private mousePressedLastX: number;
+  private mousePressedLastY: number;
 
   public ontiletypeselect: ((x: number, y: number) => any) | null;
   public ontileclick: ((x: number, y: number) => any) | null;
@@ -28,6 +35,8 @@ export class GridView {
     this.height = htmlCanvas.height;
     this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
     this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
+
+    console.log(this.width, (this.width - 1) % (tileSize + 1), this.offsetX);
     
     this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
     this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
@@ -35,6 +44,8 @@ export class GridView {
     this.gridModel = gridModel;
 
     this.mousePressed = false;
+    this.mousePressedLastX = 0;
+    this.mousePressedLastY = 0;
 
     this.ontiletypeselect = null;
     this.ontileclick = null;
@@ -206,10 +217,40 @@ export class GridView {
     return Math.floor((coordinateY - (this.offsetY + 1)) / (this.tileSize + 1));
   }
 
+  private raytraceTiles(startX: number, startY: number, endX: number, endY: number): Coordinates[]  {    
+    const distanceX: number = Math.abs(endX - startX);
+    const distanceY: number = Math.abs(endY - startY);
+
+    const xIncrement: number = (endX > startX) ? 1 : -1;
+    const yIncrement: number = (endY > startY) ? 1 : -1;
+
+    const tileCount: number = distanceX + distanceY + 1;
+    let error: number = distanceX - distanceY;
+
+    let x: number = startX;
+    let y: number = startY;
+
+    const crossedTiles: Coordinates[] = new Array<Coordinates>(tileCount);
+    for (let i = 0; i < tileCount; i++) {
+      crossedTiles[i] = {x, y};
+      if (error > 0) {
+        x += xIncrement;
+        error -= distanceY * 2;
+      } else {
+        y += yIncrement;
+        error += distanceX * 2;
+      }
+    }
+
+    return crossedTiles;
+  }
+
   private handleOnMouseDownEvent(event: MouseEvent): void {
     this.mousePressed = true;
-    this.triggerOnTileTypeSelectEvent(event);    
-    this.triggerOnTileClickEvent(event);    
+    this.mousePressedLastX = event.offsetX;
+    this.mousePressedLastY = event.offsetY;
+    this.triggerOnTileTypeSelectEvent(event);
+    this.triggerOnTileClickEvent(event);
   }
 
   private handleOnMouseMoveEvent(event: MouseEvent): void {
@@ -225,6 +266,12 @@ export class GridView {
     }
     
     if (this.mousePressed) {
+      const startX = this.coordinateXToTile(this.mousePressedLastX);
+      const startY = this.coordinateYToTile(this.mousePressedLastY);
+      const crossedTiles: Coordinates[] = this.raytraceTiles(startX, startY, x, y);
+      this.triggerOnTileClickEvents(crossedTiles);
+      this.mousePressedLastX = event.offsetX;
+      this.mousePressedLastY = event.offsetY;
       this.triggerOnTileClickEvent(event);
     }
   }
@@ -238,26 +285,37 @@ export class GridView {
   }
 
   private triggerOnTileTypeSelectEvent(event: MouseEvent): void {
-    if (this.ontiletypeselect != null) {
-      const x = this.coordinateXToTile(event.offsetX);
-      const y = this.coordinateYToTile(event.offsetY); 
-      
-      if (x < 0 || x >= this.gridWidth) return;
-      if (y < 0 || y >= this.gridHeight) return;
-  
-      this.ontiletypeselect(x, y);
-    }
+    if (this.ontiletypeselect == null) return;
+
+    const x = this.coordinateXToTile(event.offsetX);
+    const y = this.coordinateYToTile(event.offsetY); 
+    
+    if (x < 0 || x >= this.gridWidth) return;
+    if (y < 0 || y >= this.gridHeight) return;
+
+    this.ontiletypeselect(x, y);
   }
 
   private triggerOnTileClickEvent(event: MouseEvent): void {
-    if (this.ontileclick != null) {
-      const x = this.coordinateXToTile(event.offsetX);
-      const y = this.coordinateYToTile(event.offsetY); 
-      
-      if (x < 0 || x >= this.gridWidth) return;
-      if (y < 0 || y >= this.gridHeight) return;
-  
-      this.ontileclick(x, y);
+    if (this.ontileclick == null) return;
+
+    const x = this.coordinateXToTile(event.offsetX);
+    const y = this.coordinateYToTile(event.offsetY); 
+    
+    if (x < 0 || x >= this.gridWidth) return;
+    if (y < 0 || y >= this.gridHeight) return;
+
+    this.ontileclick(x, y);
+  }
+
+  private triggerOnTileClickEvents(tiles: Coordinates[]): void {
+    if (this.ontileclick == null) return;
+
+    for (let i = 0; i < tiles.length; i++) {    
+      if (tiles[i].x < 0 || tiles[i].x >= this.gridWidth) continue;
+      if (tiles[i].y < 0 || tiles[i].y >= this.gridHeight) continue;
+
+      this.ontileclick(tiles[i].x, tiles[i].y);
     }
   }
 }

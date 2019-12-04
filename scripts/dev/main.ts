@@ -11,8 +11,8 @@ function createGrid(): void {
   
   if (htmlGrid instanceof HTMLCanvasElement) {
     setupCanvas(htmlGrid);
-    htmlGrid.width = window.innerWidth - 4;
-    htmlGrid.height = window.innerHeight - 4;
+    htmlGrid.width = window.innerWidth;
+    htmlGrid.height = window.innerHeight;
     grid = new Grid(htmlGrid, 32);
   } else {
     grid = null;
