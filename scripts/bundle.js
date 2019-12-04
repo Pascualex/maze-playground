@@ -413,9 +413,13 @@ var TileType;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./Grid");
 var grid;
+var resizeMessage;
 function createGrid() {
-    var htmlGrid = document.getElementById("grid");
-    if (htmlGrid != null && htmlGrid instanceof HTMLCanvasElement) {
+    var htmlGrid = document.getElementById('grid');
+    resizeMessage = document.getElementById('resize-message');
+    var resizeMessageYes = document.getElementById('resize-message-yes');
+    var resizeMessageNo = document.getElementById('resize-message-no');
+    if (htmlGrid instanceof HTMLCanvasElement) {
         setupCanvas(htmlGrid);
         htmlGrid.width = window.innerWidth - 4;
         htmlGrid.height = window.innerHeight - 4;
@@ -424,24 +428,42 @@ function createGrid() {
     else {
         grid = null;
     }
+    if (resizeMessageYes instanceof HTMLAnchorElement) {
+        resizeMessageYes.onclick = function () { return closeResizeMessage(true); };
+    }
+    if (resizeMessageNo instanceof HTMLAnchorElement) {
+        resizeMessageNo.onclick = function () { return closeResizeMessage(false); };
+    }
+}
+function openResizeMessage() {
+    if (resizeMessage != null) {
+        resizeMessage.style.display = 'block';
+    }
+}
+function closeResizeMessage(reset) {
+    if (reset)
+        createGrid();
+    if (resizeMessage != null) {
+        resizeMessage.style.display = 'none';
+    }
 }
 function setupCanvas(htmlGrid) {
-    htmlGrid.addEventListener("touchstart", function (e) {
+    htmlGrid.addEventListener('touchstart', function (e) {
         var mousePos = getTouchPos(htmlGrid, e);
         var touch = e.touches[0];
-        var mouseEvent = new MouseEvent("mousedown", {
+        var mouseEvent = new MouseEvent('mousedown', {
             clientX: touch.clientX,
             clientY: touch.clientY
         });
         htmlGrid.dispatchEvent(mouseEvent);
     }, false);
-    htmlGrid.addEventListener("touchend", function (e) {
-        var mouseEvent = new MouseEvent("mouseup", {});
+    htmlGrid.addEventListener('touchend', function (e) {
+        var mouseEvent = new MouseEvent('mouseup', {});
         htmlGrid.dispatchEvent(mouseEvent);
     }, false);
-    htmlGrid.addEventListener("touchmove", function (e) {
+    htmlGrid.addEventListener('touchmove', function (e) {
         var touch = e.touches[0];
-        var mouseEvent = new MouseEvent("mousemove", {
+        var mouseEvent = new MouseEvent('mousemove', {
             clientX: touch.clientX,
             clientY: touch.clientY
         });
@@ -459,7 +481,7 @@ window.onload = function () {
     createGrid();
 };
 window.onresize = function () {
-    createGrid();
+    openResizeMessage();
 };
 
 },{"./Grid":1}]},{},[5]);

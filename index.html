@@ -6,6 +6,16 @@
     <script src="scripts/bundle.js"></script> 
   </head>
   <body>
-    <canvas id="grid"></canvas>
+    <div id="wrapper">
+      <canvas id="grid"></canvas>
+      <div id="resize-message">
+        <p>Window size changed</p>
+        <p>Resize and reset grid?</p>
+        <div id="row">
+          <a id="resize-message-yes">Yes</a>
+          <a id="resize-message-no">No</a>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

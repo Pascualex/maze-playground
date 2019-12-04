@@ -1,10 +1,15 @@
-import { Grid } from "./Grid"
+import { Grid } from './Grid'
 
 let grid: Grid | null;
+let resizeMessage : HTMLElement | null;
 
 function createGrid(): void {  
-  let htmlGrid : HTMLElement | null = document.getElementById("grid");
-  if (htmlGrid != null && htmlGrid instanceof HTMLCanvasElement) {
+  const htmlGrid : HTMLElement | null = document.getElementById('grid');
+  resizeMessage = document.getElementById('resize-message');
+  const resizeMessageYes = document.getElementById('resize-message-yes');
+  const resizeMessageNo = document.getElementById('resize-message-no');
+  
+  if (htmlGrid instanceof HTMLCanvasElement) {
     setupCanvas(htmlGrid);
     htmlGrid.width = window.innerWidth - 4;
     htmlGrid.height = window.innerHeight - 4;
@@ -12,27 +17,48 @@ function createGrid(): void {
   } else {
     grid = null;
   }
+
+  if (resizeMessageYes instanceof HTMLAnchorElement) {
+    resizeMessageYes.onclick = () => closeResizeMessage(true);
+  }
+
+  if (resizeMessageNo instanceof HTMLAnchorElement) {
+    resizeMessageNo.onclick = () => closeResizeMessage(false);
+  }
+}
+
+function openResizeMessage(): void {
+  if (resizeMessage != null) {
+    resizeMessage.style.display = 'block';
+  }
+}
+
+function closeResizeMessage(reset: boolean): void {
+  if (reset) createGrid();
+  if (resizeMessage != null) {
+    resizeMessage.style.display = 'none';
+  }
 }
 
 function setupCanvas(htmlGrid: HTMLCanvasElement): void {
-  htmlGrid.addEventListener("touchstart", function (e) {
+  htmlGrid.addEventListener('touchstart', function (e) {
     const mousePos = getTouchPos(htmlGrid, e);
     const touch = e.touches[0];
-    const mouseEvent = new MouseEvent("mousedown", {
+    const mouseEvent = new MouseEvent('mousedown', {
       clientX: touch.clientX,
       clientY: touch.clientY
     });
     htmlGrid.dispatchEvent(mouseEvent);
   }, false);
 
-  htmlGrid.addEventListener("touchend", function (e) {
-    const mouseEvent = new MouseEvent("mouseup", {});
+  htmlGrid.addEventListener('touchend', function (e) {
+    const mouseEvent = new MouseEvent('mouseup', {});
     htmlGrid.dispatchEvent(mouseEvent);
   }, false);
 
-  htmlGrid.addEventListener("touchmove", function (e) {
+  htmlGrid.addEventListener('touchmove', function (e) {
     const touch = e.touches[0];
-    const mouseEvent = new MouseEvent("mousemove", {
+    const mouseEvent = new MouseEvent('mousemove', {
       clientX: touch.clientX,
       clientY: touch.clientY
     });
@@ -53,6 +79,6 @@ window.onload = () => {
 }
 
 window.onresize = () => {
-  createGrid();
+  openResizeMessage();
 }
 

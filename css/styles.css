@@ -18,6 +18,67 @@ body {
   background-color: white;
 }
 
+p {
+  margin: 0;
+}
+
+a {
+  cursor: pointer;
+}
+
+#wrapper {
+  position: relative;
+}
+
 #grid {
   touch-action: none;
+}
+
+#resize-message {
+  display: none;
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 30px;
+  background-color: white;
+  box-shadow: 0 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#resize-message a {
+  padding: 0 10px 3px 10px;
+  border: solid;
+  border-width: 3px;
+  border-color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#resize-message p {
+  text-align: center;
+}
+
+#resize-message #row {
+  margin-top: 15px;
+}
+
+#resize-message-yes {
+  color: #30b348;
+}
+
+#resize-message-yes:hover {
+  border-color: #30b348;
+}
+
+#resize-message-no {
+  color: #f71b39;
+}
+
+#resize-message-no:hover {
+  border-color: #f71b39;
+}
+
+#row {
+  display: flex;
+  justify-content: space-around;
 }
