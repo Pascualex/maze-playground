@@ -56,7 +56,11 @@ export class GridModel {
     if (x < 0 || x >= this.width) return;
     if (y < 0 || y >= this.height) return;
 
-    if (tileType == TileType.Entry) this.setEntryTileAt(x, y);
+    const currentTileType: TileType = this.getTileAt(x, y)!;
+    
+    if (currentTileType == TileType.Entry) this.entryPreviousTile = tileType;
+    else if (currentTileType == TileType.Exit) this.exitPreviousTile = tileType;
+    else if (tileType == TileType.Entry) this.setEntryTileAt(x, y);
     else if (tileType == TileType.Exit) this.setExitTileAt(x, y);
     else this.tiles[y][x] = tileType;
   }

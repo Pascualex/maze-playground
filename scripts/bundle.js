@@ -46,11 +46,10 @@ var Grid = /** @class */ (function () {
             return;
         if (tileType == this.currentTileType)
             return;
-        if (tileType == TileType_1.TileType.Entry)
-            return;
-        if (tileType == TileType_1.TileType.Exit)
-            return;
-        if (this.currentTileType == TileType_1.TileType.Entry) {
+        if (tileType == TileType_1.TileType.Entry || tileType == TileType_1.TileType.Exit) {
+            this.gridModel.setTileAt(x, y, this.currentTileType);
+        }
+        else if (this.currentTileType == TileType_1.TileType.Entry) {
             var oldEntryTileX = this.gridModel.getExtryTileX();
             var oldEntryTileY = this.gridModel.getExtryTileY();
             this.gridModel.setTileAt(x, y, TileType_1.TileType.Entry);
@@ -118,7 +117,12 @@ var GridModel = /** @class */ (function () {
             return;
         if (y < 0 || y >= this.height)
             return;
-        if (tileType == TileType_1.TileType.Entry)
+        var currentTileType = this.getTileAt(x, y);
+        if (currentTileType == TileType_1.TileType.Entry)
+            this.entryPreviousTile = tileType;
+        else if (currentTileType == TileType_1.TileType.Exit)
+            this.exitPreviousTile = tileType;
+        else if (tileType == TileType_1.TileType.Entry)
             this.setEntryTileAt(x, y);
         else if (tileType == TileType_1.TileType.Exit)
             this.setExitTileAt(x, y);

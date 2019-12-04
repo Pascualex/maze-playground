@@ -49,10 +49,10 @@ export class Grid {
 
     if (tileType == null) return;
     if (tileType == this.currentTileType) return;
-    if (tileType == TileType.Entry) return;
-    if (tileType == TileType.Exit) return;
-    
-    if (this.currentTileType == TileType.Entry) {
+
+    if (tileType == TileType.Entry || tileType == TileType.Exit) {
+      this.gridModel.setTileAt(x, y, this.currentTileType);
+    } else if (this.currentTileType == TileType.Entry) {
       const oldEntryTileX = this.gridModel.getExtryTileX();
       const oldEntryTileY = this.gridModel.getExtryTileY();
       this.gridModel.setTileAt(x, y, TileType.Entry);
