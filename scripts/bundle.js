@@ -185,7 +185,6 @@ var GridView = /** @class */ (function () {
         this.height = htmlCanvas.height;
         this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
         this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
-        console.log(this.width, (this.width - 1) % (tileSize + 1), this.offsetX);
         this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
         this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
         this.gridModel = gridModel;
@@ -472,26 +471,25 @@ var TileType;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./Grid");
 var grid;
+var htmlGrid;
+var resetButton;
 var resizeMessage;
+window.onload = function () {
+    setupHtmlElements();
+    setupTouchEvents();
+    createGrid();
+};
+window.onresize = function () {
+    openResizeMessage();
+};
 function createGrid() {
-    var htmlGrid = document.getElementById('grid');
-    resizeMessage = document.getElementById('resize-message');
-    var resizeMessageYes = document.getElementById('resize-message-yes');
-    var resizeMessageNo = document.getElementById('resize-message-no');
     if (htmlGrid instanceof HTMLCanvasElement) {
-        setupCanvas(htmlGrid);
         htmlGrid.width = window.innerWidth;
         htmlGrid.height = window.innerHeight;
         grid = new Grid_1.Grid(htmlGrid, 32);
     }
     else {
         grid = null;
-    }
-    if (resizeMessageYes instanceof HTMLAnchorElement) {
-        resizeMessageYes.onclick = function () { return closeResizeMessage(true); };
-    }
-    if (resizeMessageNo instanceof HTMLAnchorElement) {
-        resizeMessageNo.onclick = function () { return closeResizeMessage(false); };
     }
 }
 function openResizeMessage() {
@@ -506,8 +504,28 @@ function closeResizeMessage(reset) {
         resizeMessage.style.display = 'none';
     }
 }
-function setupCanvas(htmlGrid) {
+function setupHtmlElements() {
+    htmlGrid = document.getElementById('grid');
+    resetButton = document.getElementById('reset-button');
+    resizeMessage = document.getElementById('resize-message');
+    var resizeMessageYes = document.getElementById('resize-message-yes');
+    var resizeMessageNo = document.getElementById('resize-message-no');
+    if (resetButton instanceof HTMLAnchorElement) {
+        resetButton.onclick = function () { return createGrid(); };
+    }
+    if (resizeMessageYes instanceof HTMLAnchorElement) {
+        resizeMessageYes.onclick = function () { return closeResizeMessage(true); };
+    }
+    if (resizeMessageNo instanceof HTMLAnchorElement) {
+        resizeMessageNo.onclick = function () { return closeResizeMessage(false); };
+    }
+}
+function setupTouchEvents() {
+    if (!(htmlGrid instanceof HTMLCanvasElement))
+        return;
     htmlGrid.addEventListener('touchstart', function (e) {
+        if (!(htmlGrid instanceof HTMLCanvasElement))
+            return;
         var mousePos = getTouchPos(htmlGrid, e);
         var touch = e.touches[0];
         var mouseEvent = new MouseEvent('mousedown', {
@@ -517,10 +535,14 @@ function setupCanvas(htmlGrid) {
         htmlGrid.dispatchEvent(mouseEvent);
     }, false);
     htmlGrid.addEventListener('touchend', function (e) {
+        if (!(htmlGrid instanceof HTMLCanvasElement))
+            return;
         var mouseEvent = new MouseEvent('mouseup', {});
         htmlGrid.dispatchEvent(mouseEvent);
     }, false);
     htmlGrid.addEventListener('touchmove', function (e) {
+        if (!(htmlGrid instanceof HTMLCanvasElement))
+            return;
         var touch = e.touches[0];
         var mouseEvent = new MouseEvent('mousemove', {
             clientX: touch.clientX,
@@ -536,11 +558,5 @@ function setupCanvas(htmlGrid) {
         };
     }
 }
-window.onload = function () {
-    createGrid();
-};
-window.onresize = function () {
-    openResizeMessage();
-};
 
 },{"./Grid":1}]},{},[5]);

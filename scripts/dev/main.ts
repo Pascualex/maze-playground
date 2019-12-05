@@ -1,29 +1,27 @@
 import { Grid } from './Grid'
 
 let grid: Grid | null;
+let htmlGrid: HTMLElement | null;
+let resetButton : HTMLElement | null;
 let resizeMessage : HTMLElement | null;
 
-function createGrid(): void {  
-  const htmlGrid : HTMLElement | null = document.getElementById('grid');
-  resizeMessage = document.getElementById('resize-message');
-  const resizeMessageYes = document.getElementById('resize-message-yes');
-  const resizeMessageNo = document.getElementById('resize-message-no');
-  
+window.onload = () => {
+  setupHtmlElements();
+  setupTouchEvents();
+  createGrid();
+}
+
+window.onresize = () => {
+  openResizeMessage();
+}
+
+function createGrid(): void {    
   if (htmlGrid instanceof HTMLCanvasElement) {
-    setupCanvas(htmlGrid);
     htmlGrid.width = window.innerWidth;
     htmlGrid.height = window.innerHeight;
     grid = new Grid(htmlGrid, 32);
   } else {
     grid = null;
-  }
-
-  if (resizeMessageYes instanceof HTMLAnchorElement) {
-    resizeMessageYes.onclick = () => closeResizeMessage(true);
-  }
-
-  if (resizeMessageNo instanceof HTMLAnchorElement) {
-    resizeMessageNo.onclick = () => closeResizeMessage(false);
   }
 }
 
@@ -40,8 +38,31 @@ function closeResizeMessage(reset: boolean): void {
   }
 }
 
-function setupCanvas(htmlGrid: HTMLCanvasElement): void {
+function setupHtmlElements(): void {
+  htmlGrid = document.getElementById('grid');
+  resetButton = document.getElementById('reset-button');
+  resizeMessage = document.getElementById('resize-message');
+  const resizeMessageYes = document.getElementById('resize-message-yes');
+  const resizeMessageNo = document.getElementById('resize-message-no');  
+
+  if (resetButton instanceof HTMLAnchorElement) {
+    resetButton.onclick = () => createGrid();
+  }
+
+  if (resizeMessageYes instanceof HTMLAnchorElement) {
+    resizeMessageYes.onclick = () => closeResizeMessage(true);
+  }
+
+  if (resizeMessageNo instanceof HTMLAnchorElement) {
+    resizeMessageNo.onclick = () => closeResizeMessage(false);
+  }
+}
+
+function setupTouchEvents(): void {
+  if (!(htmlGrid instanceof HTMLCanvasElement)) return;
+
   htmlGrid.addEventListener('touchstart', function (e) {
+    if (!(htmlGrid instanceof HTMLCanvasElement)) return;
     const mousePos = getTouchPos(htmlGrid, e);
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent('mousedown', {
@@ -52,11 +73,13 @@ function setupCanvas(htmlGrid: HTMLCanvasElement): void {
   }, false);
 
   htmlGrid.addEventListener('touchend', function (e) {
+    if (!(htmlGrid instanceof HTMLCanvasElement)) return;
     const mouseEvent = new MouseEvent('mouseup', {});
     htmlGrid.dispatchEvent(mouseEvent);
   }, false);
 
   htmlGrid.addEventListener('touchmove', function (e) {
+    if (!(htmlGrid instanceof HTMLCanvasElement)) return;
     const touch = e.touches[0];
     const mouseEvent = new MouseEvent('mousemove', {
       clientX: touch.clientX,
@@ -72,13 +95,5 @@ function setupCanvas(htmlGrid: HTMLCanvasElement): void {
       y: touchEvent.touches[0].clientY - rect.top
     };
   }
-}
-
-window.onload = () => {
-  createGrid();
-}
-
-window.onresize = () => {
-  openResizeMessage();
 }
 

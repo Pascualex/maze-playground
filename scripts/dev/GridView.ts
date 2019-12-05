@@ -35,8 +35,6 @@ export class GridView {
     this.height = htmlCanvas.height;
     this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
     this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
-
-    console.log(this.width, (this.width - 1) % (tileSize + 1), this.offsetX);
     
     this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
     this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
