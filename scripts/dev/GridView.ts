@@ -1,5 +1,6 @@
 import { GridModel } from './GridModel';
 import { TileType } from './TileType';
+import { TileState } from './TileState';
 
 interface Coordinates {
   x: number;
@@ -94,6 +95,7 @@ export class GridView {
     const ySize: number = this.tileSize + 2;
 
     const tileType: TileType = this.gridModel.getTileAt(x, y)!;
+    const tileState: TileState = this.gridModel.getStateAt(x, y)!;
     if (tileType == TileType.Wall) {
       this.canvas.fillStyle = '#0c264a';
       this.canvas.fillRect(xStart, yStart, xSize, ySize);
@@ -103,6 +105,10 @@ export class GridView {
       this.clearTile(x, y);
       this.canvas.fillStyle = '#ffffff';
       this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+      if (tileState == TileState.Visited) {
+        this.canvas.fillStyle = '#a85e32';
+        this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
+      }
     } else if (tileType == TileType.Entry) {
       this.clearTile(x, y);
       this.canvas.fillStyle = '#ffffff';

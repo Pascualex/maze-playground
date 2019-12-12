@@ -1,9 +1,11 @@
 import { TileType } from './TileType';
+import { TileState } from './TileState';
 
 export class GridModel {
   private width: number;
   private height: number;
   private tiles: TileType[][];
+  private states: TileState[][];
   private entryTileX!: number;
   private entryTileY!: number;
   private entryPreviousTile!: TileType;
@@ -16,14 +18,21 @@ export class GridModel {
     this.height = height;
 
     this.tiles = new Array<TileType[]>(height);
+    this.states = new Array<TileState[]>(height);
+
+    for (let i = 0; i < this.height; i++) {
+      this.tiles[i] = new Array<TileType>(this.width);
+      this.states[i] = new Array<TileState>(this.width);
+    }
+
     this.clear();
   }
 
   public clear(): void {    
     for (let i = 0; i < this.height; i++) {
-      this.tiles[i] = new Array<TileType>(this.width);
       for (let j = 0; j < this.width; j++) {
         this.tiles[i][j] = TileType.Floor;
+        this.states[i][j] = TileState.Undiscovered;
       }
     }
 
@@ -52,6 +61,13 @@ export class GridModel {
     return this.tiles[y][x];
   }
 
+  public getStateAt(x: number, y: number): TileState | null {
+    if (x < 0 || x >= this.width) return null;
+    if (y < 0 || y >= this.height) return null;
+    
+    return this.states[y][x];
+  }
+
   public setTileAt(x: number, y: number, tileType: TileType): void {
     if (x < 0 || x >= this.width) return;
     if (y < 0 || y >= this.height) return;
@@ -63,6 +79,13 @@ export class GridModel {
     else if (tileType == TileType.Entry) this.setEntryTileAt(x, y);
     else if (tileType == TileType.Exit) this.setExitTileAt(x, y);
     else this.tiles[y][x] = tileType;
+  }
+
+  public setStateAt(x: number, y: number, tileState: TileState): void {
+    if (x < 0 || x >= this.width) return;
+    if (y < 0 || y >= this.height) return;
+    
+    this.states[y][x] = tileState;
   }
 
   public setEntryTileAt(x: number, y: number): void {

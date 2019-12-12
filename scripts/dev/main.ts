@@ -1,4 +1,4 @@
-import { Grid } from './Grid'
+import { Grid } from './Grid';
 
 let grid: Grid | null;
 let htmlGrid: HTMLElement | null;

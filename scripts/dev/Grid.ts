@@ -1,10 +1,13 @@
 import { GridModel } from './GridModel';
 import { GridView } from './GridView';
+import { Pathfinder } from './Pathfinder';
+import { BFSPathfinder } from './BFSPathfinder';
 import { TileType } from './TileType';
 
 export class Grid {
   private gridModel: GridModel;
   private gridView: GridView;
+  private pathfinder: Pathfinder;
   private currentTileType: TileType;
 
   constructor(htmlCanvas: HTMLCanvasElement, tileSize: number) {
@@ -13,19 +16,24 @@ export class Grid {
 
     this.gridModel = new GridModel(gridHeight, gridWidth);
     this.gridView = new GridView(htmlCanvas, tileSize, this.gridModel);
+    this.pathfinder = new BFSPathfinder(this.gridModel);
 
     this.currentTileType = TileType.Floor;
 
     this.setupEvents();
     this.gridView.draw();
+    this.pathfinder.run();
   }
 
-  private setupEvents() {
+  private setupEvents(): void {
     this.gridView.ontiletypeselect = (x: number, y: number) => {
       this.handleOnTileTypeSelectEvent(x, y);
     };
     this.gridView.ontileclick = (x: number, y: number) => {
       this.handleOnTileClickEvent(x, y);
+    };
+    this.pathfinder.onstep = (x: number, y: number) => {
+      this.handleOnStep(x, y);
     };
   }
 
@@ -68,5 +76,9 @@ export class Grid {
       this.gridModel.setTileAt(x, y, this.currentTileType);
       this.gridView.drawTileAndNeighbours(x, y);
     }
+  }
+
+  private handleOnStep(x: number, y: number): void {
+    this.gridView.drawTile(x, y);
   }
 }
