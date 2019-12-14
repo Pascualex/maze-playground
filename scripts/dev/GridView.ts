@@ -1,54 +1,55 @@
 import { GridModel } from './GridModel';
 import { TileType } from './TileType';
 import { TileState } from './TileState';
-
-interface Coordinates {
-  x: number;
-  y: number;
-}
+import { Pair, Directions } from './Pair';
 
 export class GridView {
+  private htmlCanvas: HTMLCanvasElement;
   private canvas: CanvasRenderingContext2D | null;
 
-  private tileSize: number;
-  private width: number;
-  private height: number;
-  private offsetX: number;
-  private offsetY: number;
+  private tileSize!: number;
+  private width!: number;
+  private height!: number;
+  private offsetX!: number;
+  private offsetY!: number;
 
-  private gridHeight: number;
-  private gridWidth: number;
+  private gridWidth!: number;
+  private gridHeight!: number;
 
   private gridModel: GridModel;
 
-  private mousePressed: boolean;
-  private mousePressedLastX: number;
-  private mousePressedLastY: number;
+  private mousePressed!: boolean;
+  private mousePressedLastX!: number;
+  private mousePressedLastY!: number;
 
   public ontiletypeselect: ((x: number, y: number) => any) | null;
   public ontileclick: ((x: number, y: number) => any) | null;
 
   constructor(htmlCanvas: HTMLCanvasElement, tileSize: number, gridModel: GridModel) {
+    this.htmlCanvas = htmlCanvas;
     this.canvas = htmlCanvas.getContext('2d');
+    this.gridModel = gridModel;
+    this.reset(tileSize);
 
+    this.ontiletypeselect = null;
+    this.ontileclick = null;
+    this.setupEvents(htmlCanvas);
+  }
+
+  public reset(tileSize: number): void {
     this.tileSize = tileSize;
-    this.width = htmlCanvas.width;
-    this.height = htmlCanvas.height;
+
+    this.width = this.htmlCanvas.width;
+    this.height = this.htmlCanvas.height;
     this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
     this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
     
     this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
     this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
 
-    this.gridModel = gridModel;
-
     this.mousePressed = false;
     this.mousePressedLastX = 0;
     this.mousePressedLastY = 0;
-
-    this.ontiletypeselect = null;
-    this.ontileclick = null;
-    this.setupEvents(htmlCanvas);
   }
 
   private setupEvents(htmlCanvas: HTMLCanvasElement): void {
@@ -78,10 +79,7 @@ export class GridView {
 
   public drawTileAndNeighbours(x: number, y: number): void {
     this.drawTile(x, y);
-    this.drawTile(x, y - 1);
-    this.drawTile(x + 1, y);
-    this.drawTile(x, y + 1);
-    this.drawTile(x - 1, y);
+    for (const d of Directions) this.drawTile(x + d.x, y + d.y);
   }
 
   public drawTile(x: number, y: number): void {
@@ -99,13 +97,15 @@ export class GridView {
     if (tileType == TileType.Wall) {
       this.canvas.fillStyle = '#0c264a';
       this.canvas.fillRect(xStart, yStart, xSize, ySize);
-      this.canvas.fillStyle = '#42eb3f';
       this.printWallDetail(x, y);
     } else if (tileType == TileType.Floor) {
       this.clearTile(x, y);
       this.canvas.fillStyle = '#ffffff';
       this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
-      if (tileState == TileState.Visited) {
+      if (tileState == TileState.Discovered) {
+        this.canvas.fillStyle = '#ad3df2';
+        this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
+      } else if (tileState == TileState.Visited) {
         this.canvas.fillStyle = '#a85e32';
         this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
       }
@@ -221,7 +221,7 @@ export class GridView {
     return Math.floor((coordinateY - (this.offsetY + 1)) / (this.tileSize + 1));
   }
 
-  private raytraceTiles(startX: number, startY: number, endX: number, endY: number): Coordinates[]  {    
+  private raytraceTiles(startX: number, startY: number, endX: number, endY: number): Pair[]  {    
     const distanceX: number = Math.abs(endX - startX);
     const distanceY: number = Math.abs(endY - startY);
 
@@ -234,9 +234,9 @@ export class GridView {
     let x: number = startX;
     let y: number = startY;
 
-    const crossedTiles: Coordinates[] = new Array<Coordinates>(tileCount);
+    const crossedTiles: Pair[] = new Array<Pair>(tileCount);
     for (let i = 0; i < tileCount; i++) {
-      crossedTiles[i] = {x, y};
+      crossedTiles[i] = new Pair(x, y);
       if (error > 0) {
         x += xIncrement;
         error -= distanceY * 2;
@@ -272,7 +272,7 @@ export class GridView {
     if (this.mousePressed) {
       const startX = this.coordinateXToTile(this.mousePressedLastX);
       const startY = this.coordinateYToTile(this.mousePressedLastY);
-      const crossedTiles: Coordinates[] = this.raytraceTiles(startX, startY, x, y);
+      const crossedTiles: Pair[] = this.raytraceTiles(startX, startY, x, y);
       this.triggerOnTileClickEvents(crossedTiles);
       this.mousePressedLastX = event.offsetX;
       this.mousePressedLastY = event.offsetY;
@@ -312,7 +312,7 @@ export class GridView {
     this.ontileclick(x, y);
   }
 
-  private triggerOnTileClickEvents(tiles: Coordinates[]): void {
+  private triggerOnTileClickEvents(tiles: Pair[]): void {
     if (this.ontileclick == null) return;
 
     for (let i = 0; i < tiles.length; i++) {    

@@ -2,10 +2,10 @@ import { TileType } from './TileType';
 import { TileState } from './TileState';
 
 export class GridModel {
-  private width: number;
-  private height: number;
-  private tiles: TileType[][];
-  private states: TileState[][];
+  private width!: number;
+  private height!: number;
+  private tiles!: TileType[][];
+  private states!: TileState[][];
   private entryTileX!: number;
   private entryTileY!: number;
   private entryPreviousTile!: TileType;
@@ -14,9 +14,13 @@ export class GridModel {
   private exitPreviousTile!: TileType;
 
   constructor(width: number, height: number) {
+    this.reset(width, height);
+  }
+
+  public reset(width: number, height: number): void {    
     this.width = width;
     this.height = height;
-
+    
     this.tiles = new Array<TileType[]>(height);
     this.states = new Array<TileState[]>(height);
 
@@ -25,16 +29,8 @@ export class GridModel {
       this.states[i] = new Array<TileState>(this.width);
     }
 
-    this.clear();
-  }
-
-  public clear(): void {    
-    for (let i = 0; i < this.height; i++) {
-      for (let j = 0; j < this.width; j++) {
-        this.tiles[i][j] = TileType.Floor;
-        this.states[i][j] = TileState.Undiscovered;
-      }
-    }
+    this.resetTiles();
+    this.resetStates();
 
     if (this.width < 5) return;
     if (this.height < 1) return;
@@ -52,6 +48,22 @@ export class GridModel {
     
     this.tiles[this.entryTileY][this.entryTileX] = TileType.Entry;
     this.tiles[this.exitTileY][this.exitTileX] = TileType.Exit;
+  }
+
+  private resetTiles(): void {
+    for (let i = 0; i < this.height; i++) {
+      for (let j = 0; j < this.width; j++) {
+        this.tiles[i][j] = TileType.Floor;
+      }
+    }
+  }
+
+  public resetStates(): void {
+    for (let i = 0; i < this.height; i++) {
+      for (let j = 0; j < this.width; j++) {
+        this.states[i][j] = TileState.Undiscovered;
+      }
+    }
   }
 
   public getTileAt(x: number, y: number): TileType | null {

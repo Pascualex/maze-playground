@@ -3,6 +3,7 @@ import { Grid } from './Grid';
 let grid: Grid | null;
 let htmlGrid: HTMLElement | null;
 let resetButton : HTMLElement | null;
+let findButton : HTMLElement | null;
 let resizeMessage : HTMLElement | null;
 
 window.onload = () => {
@@ -25,6 +26,18 @@ function createGrid(): void {
   }
 }
 
+function resetGrid(): void {
+  if (htmlGrid instanceof HTMLCanvasElement) {
+    htmlGrid.width = window.innerWidth;
+    htmlGrid.height = window.innerHeight;
+    if (grid != null) grid.reset(32);
+  }
+}
+
+function runPathfinder(): void {
+  if (grid != null) grid.runPathfinder();
+}
+
 function openResizeMessage(): void {
   if (resizeMessage != null) {
     resizeMessage.style.display = 'block';
@@ -32,7 +45,7 @@ function openResizeMessage(): void {
 }
 
 function closeResizeMessage(reset: boolean): void {
-  if (reset) createGrid();
+  if (reset && grid != null) resetGrid();
   if (resizeMessage != null) {
     resizeMessage.style.display = 'none';
   }
@@ -41,12 +54,17 @@ function closeResizeMessage(reset: boolean): void {
 function setupHtmlElements(): void {
   htmlGrid = document.getElementById('grid');
   resetButton = document.getElementById('reset-button');
+  findButton = document.getElementById('find-button');
   resizeMessage = document.getElementById('resize-message');
   const resizeMessageYes = document.getElementById('resize-message-yes');
   const resizeMessageNo = document.getElementById('resize-message-no');  
 
   if (resetButton instanceof HTMLAnchorElement) {
-    resetButton.onclick = () => createGrid();
+    resetButton.onclick = () => resetGrid();
+  }
+
+  if (findButton instanceof HTMLAnchorElement) {
+    findButton.onclick = () => runPathfinder();
   }
 
   if (resizeMessageYes instanceof HTMLAnchorElement) {

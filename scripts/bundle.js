@@ -16,32 +16,56 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pathfinder_1 = require("./Pathfinder");
 var TileState_1 = require("./TileState");
+var Queue_1 = require("./Queue");
+var Pair_1 = require("./Pair");
+var TileType_1 = require("./TileType");
 var BFSPathfinder = /** @class */ (function (_super) {
     __extends(BFSPathfinder, _super);
     function BFSPathfinder(gridModel) {
         var _this = _super.call(this, gridModel) || this;
-        _this.x = 0;
+        _this.discoveredTiles = new Queue_1.Queue();
+        _this.reset();
         return _this;
     }
     BFSPathfinder.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+        this.discoveredTiles.clear();
     };
-    BFSPathfinder.prototype.pause = function () {
+    BFSPathfinder.prototype.initialization = function () {
+        var x = this.gridModel.getExtryTileX();
+        var y = this.gridModel.getExtryTileY();
+        this.discoveredTiles.enqueue(new Pair_1.Pair(x, y));
     };
     BFSPathfinder.prototype.step = function () {
-        this.gridModel.setStateAt(this.x, 0, TileState_1.TileState.Visited);
-        if (this.onstep != null) {
-            this.onstep(this.x, 0);
-        }
-        this.x++;
-        if (this.x >= this.gridModel.getWidth()) {
+        if (this.discoveredTiles.isEmpty()) {
             this.running = false;
+            return;
+        }
+        var current = this.discoveredTiles.dequeue();
+        this.gridModel.setStateAt(current.x, current.y, TileState_1.TileState.Visited);
+        if (this.onstep != null)
+            this.onstep(current.x, current.y);
+        for (var _i = 0, Directions_1 = Pair_1.Directions; _i < Directions_1.length; _i++) {
+            var d = Directions_1[_i];
+            if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState_1.TileState.Undiscovered) {
+                if (this.gridModel.getTileAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Exit) {
+                    this.running = false;
+                    return;
+                }
+                if (this.gridModel.getTileAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
+                    this.gridModel.setStateAt(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered);
+                    this.discoveredTiles.enqueue(new Pair_1.Pair(current.x + d.x, current.y + d.y));
+                    if (this.onstep != null)
+                        this.onstep(current.x + d.x, current.y + d.y);
+                }
+            }
         }
     };
     return BFSPathfinder;
 }(Pathfinder_1.Pathfinder));
 exports.BFSPathfinder = BFSPathfinder;
 
-},{"./Pathfinder":5,"./TileState":6}],2:[function(require,module,exports){
+},{"./Pair":5,"./Pathfinder":6,"./Queue":7,"./TileState":8,"./TileType":9}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GridModel_1 = require("./GridModel");
@@ -50,16 +74,33 @@ var BFSPathfinder_1 = require("./BFSPathfinder");
 var TileType_1 = require("./TileType");
 var Grid = /** @class */ (function () {
     function Grid(htmlCanvas, tileSize) {
-        var gridHeight = Math.floor((htmlCanvas.width - 1) / (tileSize + 1));
-        var gridWidth = Math.floor((htmlCanvas.height - 1) / (tileSize + 1));
-        this.gridModel = new GridModel_1.GridModel(gridHeight, gridWidth);
+        this.htmlCanvas = htmlCanvas;
+        var gridWidth = Math.floor((htmlCanvas.width - 1) / (tileSize + 1));
+        var gridHeight = Math.floor((htmlCanvas.height - 1) / (tileSize + 1));
+        this.gridModel = new GridModel_1.GridModel(gridWidth, gridHeight);
         this.gridView = new GridView_1.GridView(htmlCanvas, tileSize, this.gridModel);
         this.pathfinder = new BFSPathfinder_1.BFSPathfinder(this.gridModel);
         this.currentTileType = TileType_1.TileType.Floor;
         this.setupEvents();
         this.gridView.draw();
-        this.pathfinder.run();
     }
+    Grid.prototype.reset = function (tileSize) {
+        var gridWidth = Math.floor((this.htmlCanvas.width - 1) / (tileSize + 1));
+        var gridHeight = Math.floor((this.htmlCanvas.height - 1) / (tileSize + 1));
+        this.gridModel.reset(gridWidth, gridHeight);
+        this.gridView.reset(tileSize);
+        this.pathfinder.reset();
+        this.currentTileType = TileType_1.TileType.Floor;
+        this.gridView.draw();
+    };
+    Grid.prototype.runPathfinder = function () {
+        if (!this.pathfinder.isUnactivated()) {
+            this.gridModel.resetStates();
+            this.gridView.draw();
+            this.pathfinder.reset();
+        }
+        this.pathfinder.run();
+    };
     Grid.prototype.setupEvents = function () {
         var _this = this;
         this.gridView.ontiletypeselect = function (x, y) {
@@ -87,6 +128,11 @@ var Grid = /** @class */ (function () {
             else {
                 this.currentTileType = TileType_1.TileType.Wall;
             }
+        }
+        if (!this.pathfinder.isUnactivated()) {
+            this.gridModel.resetStates();
+            this.gridView.draw();
+            this.pathfinder.reset();
         }
     };
     Grid.prototype.handleOnTileClickEvent = function (x, y) {
@@ -116,6 +162,11 @@ var Grid = /** @class */ (function () {
             this.gridModel.setTileAt(x, y, this.currentTileType);
             this.gridView.drawTileAndNeighbours(x, y);
         }
+        if (!this.pathfinder.isUnactivated()) {
+            this.gridModel.resetStates();
+            this.gridView.draw();
+            this.pathfinder.reset();
+        }
     };
     Grid.prototype.handleOnStep = function (x, y) {
         this.gridView.drawTile(x, y);
@@ -124,13 +175,16 @@ var Grid = /** @class */ (function () {
 }());
 exports.Grid = Grid;
 
-},{"./BFSPathfinder":1,"./GridModel":3,"./GridView":4,"./TileType":7}],3:[function(require,module,exports){
+},{"./BFSPathfinder":1,"./GridModel":3,"./GridView":4,"./TileType":9}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("./TileType");
 var TileState_1 = require("./TileState");
 var GridModel = /** @class */ (function () {
     function GridModel(width, height) {
+        this.reset(width, height);
+    }
+    GridModel.prototype.reset = function (width, height) {
         this.width = width;
         this.height = height;
         this.tiles = new Array(height);
@@ -139,15 +193,8 @@ var GridModel = /** @class */ (function () {
             this.tiles[i] = new Array(this.width);
             this.states[i] = new Array(this.width);
         }
-        this.clear();
-    }
-    GridModel.prototype.clear = function () {
-        for (var i = 0; i < this.height; i++) {
-            for (var j = 0; j < this.width; j++) {
-                this.tiles[i][j] = TileType_1.TileType.Floor;
-                this.states[i][j] = TileState_1.TileState.Undiscovered;
-            }
-        }
+        this.resetTiles();
+        this.resetStates();
         if (this.width < 5)
             return;
         if (this.height < 1)
@@ -162,6 +209,20 @@ var GridModel = /** @class */ (function () {
         this.exitPreviousTile = TileType_1.TileType.Floor;
         this.tiles[this.entryTileY][this.entryTileX] = TileType_1.TileType.Entry;
         this.tiles[this.exitTileY][this.exitTileX] = TileType_1.TileType.Exit;
+    };
+    GridModel.prototype.resetTiles = function () {
+        for (var i = 0; i < this.height; i++) {
+            for (var j = 0; j < this.width; j++) {
+                this.tiles[i][j] = TileType_1.TileType.Floor;
+            }
+        }
+    };
+    GridModel.prototype.resetStates = function () {
+        for (var i = 0; i < this.height; i++) {
+            for (var j = 0; j < this.width; j++) {
+                this.states[i][j] = TileState_1.TileState.Undiscovered;
+            }
+        }
     };
     GridModel.prototype.getTileAt = function (x, y) {
         if (x < 0 || x >= this.width)
@@ -245,29 +306,34 @@ var GridModel = /** @class */ (function () {
 }());
 exports.GridModel = GridModel;
 
-},{"./TileState":6,"./TileType":7}],4:[function(require,module,exports){
+},{"./TileState":8,"./TileType":9}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("./TileType");
 var TileState_1 = require("./TileState");
+var Pair_1 = require("./Pair");
 var GridView = /** @class */ (function () {
     function GridView(htmlCanvas, tileSize, gridModel) {
+        this.htmlCanvas = htmlCanvas;
         this.canvas = htmlCanvas.getContext('2d');
-        this.tileSize = tileSize;
-        this.width = htmlCanvas.width;
-        this.height = htmlCanvas.height;
-        this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
-        this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
-        this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
-        this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
         this.gridModel = gridModel;
-        this.mousePressed = false;
-        this.mousePressedLastX = 0;
-        this.mousePressedLastY = 0;
+        this.reset(tileSize);
         this.ontiletypeselect = null;
         this.ontileclick = null;
         this.setupEvents(htmlCanvas);
     }
+    GridView.prototype.reset = function (tileSize) {
+        this.tileSize = tileSize;
+        this.width = this.htmlCanvas.width;
+        this.height = this.htmlCanvas.height;
+        this.offsetX = Math.floor(((this.width - 1) % (tileSize + 1)) / 2);
+        this.offsetY = Math.floor(((this.height - 1) % (tileSize + 1)) / 2);
+        this.gridWidth = Math.floor((this.width - 1) / (tileSize + 1));
+        this.gridHeight = Math.floor((this.height - 1) / (tileSize + 1));
+        this.mousePressed = false;
+        this.mousePressedLastX = 0;
+        this.mousePressedLastY = 0;
+    };
     GridView.prototype.setupEvents = function (htmlCanvas) {
         var _this = this;
         htmlCanvas.onmousedown = function (event) {
@@ -294,10 +360,10 @@ var GridView = /** @class */ (function () {
     };
     GridView.prototype.drawTileAndNeighbours = function (x, y) {
         this.drawTile(x, y);
-        this.drawTile(x, y - 1);
-        this.drawTile(x + 1, y);
-        this.drawTile(x, y + 1);
-        this.drawTile(x - 1, y);
+        for (var _i = 0, Directions_1 = Pair_1.Directions; _i < Directions_1.length; _i++) {
+            var d = Directions_1[_i];
+            this.drawTile(x + d.x, y + d.y);
+        }
     };
     GridView.prototype.drawTile = function (x, y) {
         if (this.canvas == null)
@@ -315,14 +381,17 @@ var GridView = /** @class */ (function () {
         if (tileType == TileType_1.TileType.Wall) {
             this.canvas.fillStyle = '#0c264a';
             this.canvas.fillRect(xStart, yStart, xSize, ySize);
-            this.canvas.fillStyle = '#42eb3f';
             this.printWallDetail(x, y);
         }
         else if (tileType == TileType_1.TileType.Floor) {
             this.clearTile(x, y);
             this.canvas.fillStyle = '#ffffff';
             this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
-            if (tileState == TileState_1.TileState.Visited) {
+            if (tileState == TileState_1.TileState.Discovered) {
+                this.canvas.fillStyle = '#ad3df2';
+                this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
+            }
+            else if (tileState == TileState_1.TileState.Visited) {
                 this.canvas.fillStyle = '#a85e32';
                 this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
             }
@@ -451,7 +520,7 @@ var GridView = /** @class */ (function () {
         var y = startY;
         var crossedTiles = new Array(tileCount);
         for (var i = 0; i < tileCount; i++) {
-            crossedTiles[i] = { x: x, y: y };
+            crossedTiles[i] = new Pair_1.Pair(x, y);
             if (error > 0) {
                 x += xIncrement;
                 error -= distanceY * 2;
@@ -533,7 +602,25 @@ var GridView = /** @class */ (function () {
 }());
 exports.GridView = GridView;
 
-},{"./TileState":6,"./TileType":7}],5:[function(require,module,exports){
+},{"./Pair":5,"./TileState":8,"./TileType":9}],5:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Pair = /** @class */ (function () {
+    function Pair(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+    return Pair;
+}());
+exports.Pair = Pair;
+exports.Directions = [
+    new Pair(0, -1),
+    new Pair(1, 0),
+    new Pair(0, 1),
+    new Pair(-1, 0)
+];
+
+},{}],6:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -576,30 +663,44 @@ var Pathfinder = /** @class */ (function () {
     function Pathfinder(gridModel) {
         this.gridModel = gridModel;
         this.running = false;
-        this.stepDelay = 500;
+        this.runningId = 0;
+        this.stepDelay = 20;
         this.onstep = null;
     }
+    Pathfinder.prototype.reset = function () {
+        this.running = false;
+        this.stepDelay = 20;
+        this.unactivated = true;
+    };
     Pathfinder.prototype.run = function () {
         if (!this.running) {
+            this.unactivated = false;
             this.running = true;
-            this.stepLoop();
+            this.runningId++;
+            this.stepLoop(this.runningId);
         }
     };
     Pathfinder.prototype.pause = function () {
         this.running = false;
     };
-    Pathfinder.prototype.stepLoop = function () {
+    Pathfinder.prototype.isUnactivated = function () {
+        return this.unactivated;
+    };
+    Pathfinder.prototype.stepLoop = function (runningId) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!this.running) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.delay(this.stepDelay)];
+                        this.initialization();
+                        _a.label = 1;
                     case 1:
-                        _a.sent();
+                        if (!(this.running && runningId == this.runningId)) return [3 /*break*/, 3];
                         this.step();
-                        return [3 /*break*/, 0];
-                    case 2: return [2 /*return*/];
+                        return [4 /*yield*/, this.delay(this.stepDelay)];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 1];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -612,7 +713,36 @@ var Pathfinder = /** @class */ (function () {
 }());
 exports.Pathfinder = Pathfinder;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Queue = /** @class */ (function () {
+    function Queue() {
+        this.storage = new Array();
+    }
+    Queue.prototype.clear = function () {
+        this.storage.length = 0;
+    };
+    Queue.prototype.enqueue = function (value) {
+        this.storage.push(value);
+    };
+    Queue.prototype.dequeue = function () {
+        var value = this.storage.shift();
+        if (value == undefined)
+            return null;
+        return value;
+    };
+    Queue.prototype.size = function () {
+        return this.storage.length;
+    };
+    Queue.prototype.isEmpty = function () {
+        return this.storage.length == 0;
+    };
+    return Queue;
+}());
+exports.Queue = Queue;
+
+},{}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileState;
@@ -623,7 +753,7 @@ var TileState;
     TileState[TileState["Path"] = 3] = "Path";
 })(TileState = exports.TileState || (exports.TileState = {}));
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType;
@@ -634,13 +764,14 @@ var TileType;
     TileType[TileType["Exit"] = 3] = "Exit";
 })(TileType = exports.TileType || (exports.TileType = {}));
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./Grid");
 var grid;
 var htmlGrid;
 var resetButton;
+var findButton;
 var resizeMessage;
 window.onload = function () {
     setupHtmlElements();
@@ -660,14 +791,26 @@ function createGrid() {
         grid = null;
     }
 }
+function resetGrid() {
+    if (htmlGrid instanceof HTMLCanvasElement) {
+        htmlGrid.width = window.innerWidth;
+        htmlGrid.height = window.innerHeight;
+        if (grid != null)
+            grid.reset(32);
+    }
+}
+function runPathfinder() {
+    if (grid != null)
+        grid.runPathfinder();
+}
 function openResizeMessage() {
     if (resizeMessage != null) {
         resizeMessage.style.display = 'block';
     }
 }
 function closeResizeMessage(reset) {
-    if (reset)
-        createGrid();
+    if (reset && grid != null)
+        resetGrid();
     if (resizeMessage != null) {
         resizeMessage.style.display = 'none';
     }
@@ -675,11 +818,15 @@ function closeResizeMessage(reset) {
 function setupHtmlElements() {
     htmlGrid = document.getElementById('grid');
     resetButton = document.getElementById('reset-button');
+    findButton = document.getElementById('find-button');
     resizeMessage = document.getElementById('resize-message');
     var resizeMessageYes = document.getElementById('resize-message-yes');
     var resizeMessageNo = document.getElementById('resize-message-no');
     if (resetButton instanceof HTMLAnchorElement) {
-        resetButton.onclick = function () { return createGrid(); };
+        resetButton.onclick = function () { return resetGrid(); };
+    }
+    if (findButton instanceof HTMLAnchorElement) {
+        findButton.onclick = function () { return runPathfinder(); };
     }
     if (resizeMessageYes instanceof HTMLAnchorElement) {
         resizeMessageYes.onclick = function () { return closeResizeMessage(true); };
@@ -727,4 +874,4 @@ function setupTouchEvents() {
     }
 }
 
-},{"./Grid":2}]},{},[8]);
+},{"./Grid":2}]},{},[10]);
