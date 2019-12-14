@@ -2,6 +2,7 @@ import { GridModel } from './GridModel';
 import { GridView } from './GridView';
 import { Pathfinder } from './Pathfinder';
 import { BFSPathfinder } from './BFSPathfinder';
+import { DFSPathfinder } from './DFSPathfinder';
 import { TileType } from './TileType';
 
 export class Grid {
@@ -60,6 +61,9 @@ export class Grid {
     this.pathfinder.onstep = (x: number, y: number) => {
       this.handleOnStep(x, y);
     };
+    this.pathfinder.onsolvestep = (x: number, y: number) => {
+      this.handleOnSolveStep(x, y);
+    }
   }
 
   private handleOnTileTypeSelectEvent(x: number, y: number): void {
@@ -117,5 +121,9 @@ export class Grid {
 
   private handleOnStep(x: number, y: number): void {
     this.gridView.drawTile(x, y);
+  }
+
+  private handleOnSolveStep(x: number, y: number): void {
+    this.gridView.drawTileAndNeighbours(x, y);
   }
 }

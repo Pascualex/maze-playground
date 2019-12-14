@@ -218,22 +218,38 @@ export class GridView {
 
     if (tileState == TileState.Undiscovered) return;
 
-    if (tileState == TileState.Discovered) {
-      this.canvas.fillStyle = '#ad3df2';
-    } else if (tileState == TileState.Visited) {
-      this.canvas.fillStyle = '#a85e32';
-    } else if (tileState == TileState.Path) {
+    if (tileState == TileState.Path) {
       this.canvas.fillStyle = '#f71b39';
-    } else {      
-      this.canvas.fillStyle = '#f01fff';
+
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+      this.canvas.fill();
+
+      const top: boolean = (this.gridModel.getStateAt(x, y - 1) == TileState.Path);
+      const right: boolean = (this.gridModel.getStateAt(x + 1, y) == TileState.Path);
+      const bottom: boolean = (this.gridModel.getStateAt(x, y + 1) == TileState.Path);
+      const left: boolean = (this.gridModel.getStateAt(x - 1, y) == TileState.Path);
+
+      if (top) this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 22);
+      if (right) this.canvas.fillRect(xStart + 22, yStart + 15, xSize - 22, ySize - 30);
+      if (bottom) this.canvas.fillRect(xStart + 15, yStart + 22, xSize - 30, ySize - 22);
+      if (left) this.canvas.fillRect(xStart, yStart + 15, xSize - 22, ySize - 30);
+    } else {
+      if (tileState == TileState.Discovered) {
+        this.canvas.fillStyle = '#ad3df2';
+      } else if (tileState == TileState.Visited) {
+        this.canvas.fillStyle = '#a85e32';
+      } else {
+        this.canvas.fillStyle = '#f01fff';
+      }
+
+      this.canvas.beginPath();
+      this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+      this.canvas.fill();
+
+      const d: Pair = getDirectionValue(direction);
+      this.canvas.fillRect(xStart + 15 + (d.x * 7), yStart + 15 + (d.y * 7), xSize - 30, ySize - 30);
     }
-
-    this.canvas.beginPath();
-    this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
-    this.canvas.fill();
-
-    const d: Pair = getDirectionValue(direction);
-    this.canvas.fillRect(xStart + 15 + (d.x * 7), yStart + 15 + (d.y * 7), xSize - 30, ySize - 30);
   }
 
   private tileToCoordinateX(x: number): number {

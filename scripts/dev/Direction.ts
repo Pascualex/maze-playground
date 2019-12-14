@@ -10,11 +10,20 @@ export enum Direction {
 
 export function getAllDirections(): Direction[] {
   return [
+    Direction.Right,
+    Direction.Left,
+    Direction.Up,
+    Direction.Down
+  ];
+}
+
+export function getRandomizedDirections(): Direction[] {
+  return shuffle([
     Direction.Up,
     Direction.Right,
     Direction.Down,
     Direction.Left
-  ];
+  ]);
 }
 
 export function getDirectionValue(direction: Direction): Pair {
@@ -31,4 +40,12 @@ export function invertDirection(direction: Direction): Direction {
   else if (direction == Direction.Down) return Direction.Up;
   else if (direction == Direction.Left) return Direction.Right;
   else return Direction.None;
+}
+
+function shuffle(array: Direction[]): Direction[] {
+  for (let i: number = array.length - 1; i > 0; i--) {
+      const j: number = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }

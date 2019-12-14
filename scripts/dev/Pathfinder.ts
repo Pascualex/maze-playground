@@ -6,21 +6,25 @@ import { Pair } from './Pair';
 
 export abstract class Pathfinder {
   protected gridModel: GridModel;
-  protected running!: boolean;
-  protected exitFound!: boolean;
+  protected running: boolean;
+  protected exitFound: boolean;
   protected pathX!: number;
   protected pathY!: number;
   private runningId: number;
-  private stepDelay!: number;
-  private unactivated!: boolean;
-  public onstep!: ((x: number, y: number) => any) | null;
+  private stepDelay: number;
+  private unactivated: boolean;
+  public onstep: ((x: number, y: number) => any) | null;
+  public onsolvestep: ((x: number, y: number) => any) | null;
 
   constructor(gridModel: GridModel) {
     this.gridModel = gridModel;
     this.running = false;
+    this.exitFound = false;
     this.runningId = 0;
     this.stepDelay = 50;
+    this.unactivated = true;
     this.onstep = null;
+    this.onsolvestep = null;
   }
 
   public reset(): void {
@@ -60,15 +64,16 @@ export abstract class Pathfinder {
   protected abstract step(): void;
 
   private stepPath(): void {
+    this.gridModel.setStateAt(this.pathX, this.pathY, TileState.Path);
+    const direction: Direction = this.gridModel.getDirectionAt(this.pathX, this.pathY)!;
+    if (this.onsolvestep != null) this.onsolvestep(this.pathX, this.pathY);
+    const d: Pair = getDirectionValue(direction);
+
     if (this.gridModel.getTypeAt(this.pathX, this.pathY) == TileType.Entry) {
       this.running = false;
       return;
     }
 
-    this.gridModel.setStateAt(this.pathX, this.pathY, TileState.Path);
-    const direction: Direction = this.gridModel.getDirectionAt(this.pathX, this.pathY)!;
-    if (this.onstep != null) this.onstep(this.pathX, this.pathY);
-    const d: Pair = getDirectionValue(direction);
     this.pathX += d.x;
     this.pathY += d.y;
   }
