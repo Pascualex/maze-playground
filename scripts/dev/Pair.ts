@@ -7,10 +7,3 @@ export class Pair {
     this.y = y;
   }
 }
-
-export const Directions: Pair[] = [
-  new Pair(0, -1),
-  new Pair(1, 0),
-  new Pair(0, 1),
-  new Pair(-1, 0)
-];

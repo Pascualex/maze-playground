@@ -1,7 +1,8 @@
 import { GridModel } from './GridModel';
 import { TileType } from './TileType';
 import { TileState } from './TileState';
-import { Pair, Directions } from './Pair';
+import { Pair } from './Pair';
+import { Direction, getAllDirections, getDirectionValue } from './Direction';
 
 export class GridView {
   private htmlCanvas: HTMLCanvasElement;
@@ -79,7 +80,10 @@ export class GridView {
 
   public drawTileAndNeighbours(x: number, y: number): void {
     this.drawTile(x, y);
-    for (const d of Directions) this.drawTile(x + d.x, y + d.y);
+    for (const direction of getAllDirections()) {
+      const d: Pair = getDirectionValue(direction);
+      this.drawTile(x + d.x, y + d.y);
+    }
   }
 
   public drawTile(x: number, y: number): void {
@@ -92,8 +96,8 @@ export class GridView {
     const xSize: number = this.tileSize + 2;
     const ySize: number = this.tileSize + 2;
 
-    const tileType: TileType = this.gridModel.getTileAt(x, y)!;
-    const tileState: TileState = this.gridModel.getStateAt(x, y)!;
+    const tileType: TileType = this.gridModel.getTypeAt(x, y)!;
+
     if (tileType == TileType.Wall) {
       this.canvas.fillStyle = '#0c264a';
       this.canvas.fillRect(xStart, yStart, xSize, ySize);
@@ -102,13 +106,7 @@ export class GridView {
       this.clearTile(x, y);
       this.canvas.fillStyle = '#ffffff';
       this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
-      if (tileState == TileState.Discovered) {
-        this.canvas.fillStyle = '#ad3df2';
-        this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
-      } else if (tileState == TileState.Visited) {
-        this.canvas.fillStyle = '#a85e32';
-        this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
-      }
+      this.printStateDetail(x, y);
     } else if (tileType == TileType.Entry) {
       this.clearTile(x, y);
       this.canvas.fillStyle = '#ffffff';
@@ -157,17 +155,17 @@ export class GridView {
     let xSize: number = this.tileSize + 2;
     let ySize: number = this.tileSize + 2;
     
-    if (this.gridModel.getTileAt(x, y - 1) == TileType.Wall) {
+    if (this.gridModel.getTypeAt(x, y - 1) == TileType.Wall) {
       yStart++;
       ySize--;
     }
-    if (this.gridModel.getTileAt(x + 1, y) == TileType.Wall) {
+    if (this.gridModel.getTypeAt(x + 1, y) == TileType.Wall) {
       xSize--;
     }
-    if (this.gridModel.getTileAt(x, y + 1) == TileType.Wall) {
+    if (this.gridModel.getTypeAt(x, y + 1) == TileType.Wall) {
       ySize--;
     }
-    if (this.gridModel.getTileAt(x - 1, y) == TileType.Wall) {
+    if (this.gridModel.getTypeAt(x - 1, y) == TileType.Wall) {
       xStart++;
       xSize--;
     }
@@ -186,10 +184,10 @@ export class GridView {
     const xSize: number = this.tileSize + 2;
     const ySize: number = this.tileSize + 2;
 
-    const top: boolean = (this.gridModel.getTileAt(x, y - 1) == TileType.Wall);
-    const right: boolean = (this.gridModel.getTileAt(x + 1, y) == TileType.Wall);
-    const bottom: boolean = (this.gridModel.getTileAt(x, y + 1) == TileType.Wall);
-    const left: boolean = (this.gridModel.getTileAt(x - 1, y) == TileType.Wall);
+    const top: boolean = (this.gridModel.getTypeAt(x, y - 1) == TileType.Wall);
+    const right: boolean = (this.gridModel.getTypeAt(x + 1, y) == TileType.Wall);
+    const bottom: boolean = (this.gridModel.getTypeAt(x, y + 1) == TileType.Wall);
+    const left: boolean = (this.gridModel.getTypeAt(x - 1, y) == TileType.Wall);
 
     this.canvas.fillStyle = '#3af0c8';
     if (right && left && !top && !bottom) {
@@ -203,6 +201,39 @@ export class GridView {
       if (bottom) this.canvas.fillRect(xStart + 15, yStart + 23, xSize - 30, ySize - 23);
       if (left) this.canvas.fillRect(xStart, yStart + 15, xSize - 23, ySize - 30);
     }
+  }
+
+  private printStateDetail(x: number, y: number) {
+    if (this.canvas == null) return;
+    if (x < 0 || x >= this.gridWidth) return;
+    if (y < 0 || y >= this.gridHeight) return;
+
+    const xStart: number = this.tileToCoordinateX(x);
+    const yStart: number = this.tileToCoordinateY(y);
+    const xSize: number = this.tileSize + 2;
+    const ySize: number = this.tileSize + 2;
+
+    const tileState: TileState = this.gridModel.getStateAt(x, y)!;
+    const direction: Direction = this.gridModel.getDirectionAt(x, y)!;
+
+    if (tileState == TileState.Undiscovered) return;
+
+    if (tileState == TileState.Discovered) {
+      this.canvas.fillStyle = '#ad3df2';
+    } else if (tileState == TileState.Visited) {
+      this.canvas.fillStyle = '#a85e32';
+    } else if (tileState == TileState.Path) {
+      this.canvas.fillStyle = '#f71b39';
+    } else {      
+      this.canvas.fillStyle = '#f01fff';
+    }
+
+    this.canvas.beginPath();
+    this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+    this.canvas.fill();
+
+    const d: Pair = getDirectionValue(direction);
+    this.canvas.fillRect(xStart + 15 + (d.x * 7), yStart + 15 + (d.y * 7), xSize - 30, ySize - 30);
   }
 
   private tileToCoordinateX(x: number): number {
@@ -261,7 +292,7 @@ export class GridView {
     const x = this.coordinateXToTile(event.offsetX);
     const y = this.coordinateYToTile(event.offsetY);
 
-    const tileType: TileType | null = this.gridModel.getTileAt(x, y);
+    const tileType: TileType | null = this.gridModel.getTypeAt(x, y);
 
     if (tileType == TileType.Entry || tileType == TileType.Exit) {
       document.body.style.cursor = 'pointer';

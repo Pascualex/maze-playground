@@ -15,10 +15,11 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pathfinder_1 = require("./Pathfinder");
+var TileType_1 = require("./TileType");
 var TileState_1 = require("./TileState");
 var Queue_1 = require("./Queue");
 var Pair_1 = require("./Pair");
-var TileType_1 = require("./TileType");
+var Direction_1 = require("./Direction");
 var BFSPathfinder = /** @class */ (function (_super) {
     __extends(BFSPathfinder, _super);
     function BFSPathfinder(gridModel) {
@@ -32,8 +33,8 @@ var BFSPathfinder = /** @class */ (function (_super) {
         this.discoveredTiles.clear();
     };
     BFSPathfinder.prototype.initialization = function () {
-        var x = this.gridModel.getExtryTileX();
-        var y = this.gridModel.getExtryTileY();
+        var x = this.gridModel.getEntryTileX();
+        var y = this.gridModel.getEntryTileY();
         this.discoveredTiles.enqueue(new Pair_1.Pair(x, y));
     };
     BFSPathfinder.prototype.step = function () {
@@ -45,15 +46,24 @@ var BFSPathfinder = /** @class */ (function (_super) {
         this.gridModel.setStateAt(current.x, current.y, TileState_1.TileState.Visited);
         if (this.onstep != null)
             this.onstep(current.x, current.y);
-        for (var _i = 0, Directions_1 = Pair_1.Directions; _i < Directions_1.length; _i++) {
-            var d = Directions_1[_i];
+        for (var _i = 0, _a = Direction_1.getAllDirections(); _i < _a.length; _i++) {
+            var direction = _a[_i];
+            var d = Direction_1.getDirectionValue(direction);
             if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState_1.TileState.Undiscovered) {
-                if (this.gridModel.getTileAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Exit) {
-                    this.running = false;
+                if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Exit) {
+                    var invertedDirection = Direction_1.invertDirection(direction);
+                    this.gridModel.setDirectionAt(current.x + d.x, current.y + d.y, invertedDirection);
+                    this.exitFound = true;
+                    this.pathX = current.x + d.x;
+                    this.pathY = current.y + d.y;
+                    if (this.onstep != null)
+                        this.onstep(current.x + d.x, current.y + d.y);
                     return;
                 }
-                if (this.gridModel.getTileAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
+                if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
                     this.gridModel.setStateAt(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered);
+                    var invertedDirection = Direction_1.invertDirection(direction);
+                    this.gridModel.setDirectionAt(current.x + d.x, current.y + d.y, invertedDirection);
                     this.discoveredTiles.enqueue(new Pair_1.Pair(current.x + d.x, current.y + d.y));
                     if (this.onstep != null)
                         this.onstep(current.x + d.x, current.y + d.y);
@@ -65,7 +75,55 @@ var BFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.BFSPathfinder = BFSPathfinder;
 
-},{"./Pair":5,"./Pathfinder":6,"./Queue":7,"./TileState":8,"./TileType":9}],2:[function(require,module,exports){
+},{"./Direction":2,"./Pair":6,"./Pathfinder":7,"./Queue":8,"./TileState":9,"./TileType":10}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Pair_1 = require("./Pair");
+var Direction;
+(function (Direction) {
+    Direction[Direction["Up"] = 0] = "Up";
+    Direction[Direction["Right"] = 1] = "Right";
+    Direction[Direction["Down"] = 2] = "Down";
+    Direction[Direction["Left"] = 3] = "Left";
+    Direction[Direction["None"] = 4] = "None";
+})(Direction = exports.Direction || (exports.Direction = {}));
+function getAllDirections() {
+    return [
+        Direction.Up,
+        Direction.Right,
+        Direction.Down,
+        Direction.Left
+    ];
+}
+exports.getAllDirections = getAllDirections;
+function getDirectionValue(direction) {
+    if (direction == Direction.Up)
+        return new Pair_1.Pair(0, -1);
+    else if (direction == Direction.Right)
+        return new Pair_1.Pair(1, 0);
+    else if (direction == Direction.Down)
+        return new Pair_1.Pair(0, 1);
+    else if (direction == Direction.Left)
+        return new Pair_1.Pair(-1, 0);
+    else
+        return new Pair_1.Pair(0, 0);
+}
+exports.getDirectionValue = getDirectionValue;
+function invertDirection(direction) {
+    if (direction == Direction.Up)
+        return Direction.Down;
+    else if (direction == Direction.Right)
+        return Direction.Left;
+    else if (direction == Direction.Down)
+        return Direction.Up;
+    else if (direction == Direction.Left)
+        return Direction.Right;
+    else
+        return Direction.None;
+}
+exports.invertDirection = invertDirection;
+
+},{"./Pair":6}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GridModel_1 = require("./GridModel");
@@ -114,7 +172,7 @@ var Grid = /** @class */ (function () {
         };
     };
     Grid.prototype.handleOnTileTypeSelectEvent = function (x, y) {
-        var newTileType = this.gridModel.getTileAt(x, y);
+        var newTileType = this.gridModel.getTypeAt(x, y);
         if (newTileType != null) {
             if (newTileType == TileType_1.TileType.Wall) {
                 this.currentTileType = TileType_1.TileType.Floor;
@@ -136,30 +194,30 @@ var Grid = /** @class */ (function () {
         }
     };
     Grid.prototype.handleOnTileClickEvent = function (x, y) {
-        var tileType = this.gridModel.getTileAt(x, y);
+        var tileType = this.gridModel.getTypeAt(x, y);
         if (tileType == null)
             return;
         if (tileType == this.currentTileType)
             return;
         if (tileType == TileType_1.TileType.Entry || tileType == TileType_1.TileType.Exit) {
-            this.gridModel.setTileAt(x, y, this.currentTileType);
+            this.gridModel.setTypeAt(x, y, this.currentTileType);
         }
         else if (this.currentTileType == TileType_1.TileType.Entry) {
-            var oldEntryTileX = this.gridModel.getExtryTileX();
-            var oldEntryTileY = this.gridModel.getExtryTileY();
-            this.gridModel.setTileAt(x, y, TileType_1.TileType.Entry);
+            var oldEntryTileX = this.gridModel.getEntryTileX();
+            var oldEntryTileY = this.gridModel.getEntryTileY();
+            this.gridModel.setTypeAt(x, y, TileType_1.TileType.Entry);
             this.gridView.drawTileAndNeighbours(x, y);
             this.gridView.drawTileAndNeighbours(oldEntryTileX, oldEntryTileY);
         }
         else if (this.currentTileType == TileType_1.TileType.Exit) {
             var oldExitTileX = this.gridModel.getExitTileX();
             var oldExitTileY = this.gridModel.getExitTileY();
-            this.gridModel.setTileAt(x, y, TileType_1.TileType.Exit);
+            this.gridModel.setTypeAt(x, y, TileType_1.TileType.Exit);
             this.gridView.drawTileAndNeighbours(x, y);
             this.gridView.drawTileAndNeighbours(oldExitTileX, oldExitTileY);
         }
         else {
-            this.gridModel.setTileAt(x, y, this.currentTileType);
+            this.gridModel.setTypeAt(x, y, this.currentTileType);
             this.gridView.drawTileAndNeighbours(x, y);
         }
         if (!this.pathfinder.isUnactivated()) {
@@ -175,11 +233,12 @@ var Grid = /** @class */ (function () {
 }());
 exports.Grid = Grid;
 
-},{"./BFSPathfinder":1,"./GridModel":3,"./GridView":4,"./TileType":9}],3:[function(require,module,exports){
+},{"./BFSPathfinder":1,"./GridModel":4,"./GridView":5,"./TileType":10}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("./TileType");
 var TileState_1 = require("./TileState");
+var Direction_1 = require("./Direction");
 var GridModel = /** @class */ (function () {
     function GridModel(width, height) {
         this.reset(width, height);
@@ -189,12 +248,19 @@ var GridModel = /** @class */ (function () {
         this.height = height;
         this.tiles = new Array(height);
         this.states = new Array(height);
+        this.directions = new Array(height);
         for (var i = 0; i < this.height; i++) {
             this.tiles[i] = new Array(this.width);
             this.states[i] = new Array(this.width);
+            this.directions[i] = new Array(this.width);
         }
-        this.resetTiles();
-        this.resetStates();
+        for (var i = 0; i < this.height; i++) {
+            for (var j = 0; j < this.width; j++) {
+                this.tiles[i][j] = TileType_1.TileType.Floor;
+                this.states[i][j] = TileState_1.TileState.Undiscovered;
+                this.directions[i][j] = Direction_1.Direction.None;
+            }
+        }
         if (this.width < 5)
             return;
         if (this.height < 1)
@@ -210,13 +276,6 @@ var GridModel = /** @class */ (function () {
         this.tiles[this.entryTileY][this.entryTileX] = TileType_1.TileType.Entry;
         this.tiles[this.exitTileY][this.exitTileX] = TileType_1.TileType.Exit;
     };
-    GridModel.prototype.resetTiles = function () {
-        for (var i = 0; i < this.height; i++) {
-            for (var j = 0; j < this.width; j++) {
-                this.tiles[i][j] = TileType_1.TileType.Floor;
-            }
-        }
-    };
     GridModel.prototype.resetStates = function () {
         for (var i = 0; i < this.height; i++) {
             for (var j = 0; j < this.width; j++) {
@@ -224,7 +283,7 @@ var GridModel = /** @class */ (function () {
             }
         }
     };
-    GridModel.prototype.getTileAt = function (x, y) {
+    GridModel.prototype.getTypeAt = function (x, y) {
         if (x < 0 || x >= this.width)
             return null;
         if (y < 0 || y >= this.height)
@@ -238,12 +297,37 @@ var GridModel = /** @class */ (function () {
             return null;
         return this.states[y][x];
     };
-    GridModel.prototype.setTileAt = function (x, y, tileType) {
+    GridModel.prototype.getDirectionAt = function (x, y) {
+        if (x < 0 || x >= this.width)
+            return null;
+        if (y < 0 || y >= this.height)
+            return null;
+        return this.directions[y][x];
+    };
+    GridModel.prototype.getWidth = function () {
+        return this.width;
+    };
+    GridModel.prototype.getHeight = function () {
+        return this.height;
+    };
+    GridModel.prototype.getEntryTileX = function () {
+        return this.entryTileX;
+    };
+    GridModel.prototype.getEntryTileY = function () {
+        return this.entryTileY;
+    };
+    GridModel.prototype.getExitTileX = function () {
+        return this.exitTileX;
+    };
+    GridModel.prototype.getExitTileY = function () {
+        return this.exitTileY;
+    };
+    GridModel.prototype.setTypeAt = function (x, y, tileType) {
         if (x < 0 || x >= this.width)
             return;
         if (y < 0 || y >= this.height)
             return;
-        var currentTileType = this.getTileAt(x, y);
+        var currentTileType = this.getTypeAt(x, y);
         if (currentTileType == TileType_1.TileType.Entry)
             this.entryPreviousTile = tileType;
         else if (currentTileType == TileType_1.TileType.Exit)
@@ -261,6 +345,13 @@ var GridModel = /** @class */ (function () {
         if (y < 0 || y >= this.height)
             return;
         this.states[y][x] = tileState;
+    };
+    GridModel.prototype.setDirectionAt = function (x, y, direction) {
+        if (x < 0 || x >= this.width)
+            return;
+        if (y < 0 || y >= this.height)
+            return;
+        this.directions[y][x] = direction;
     };
     GridModel.prototype.setEntryTileAt = function (x, y) {
         if (x < 0 || x >= this.width)
@@ -284,34 +375,17 @@ var GridModel = /** @class */ (function () {
         this.exitPreviousTile = this.tiles[y][x];
         this.tiles[y][x] = TileType_1.TileType.Exit;
     };
-    GridModel.prototype.getWidth = function () {
-        return this.width;
-    };
-    GridModel.prototype.getHeight = function () {
-        return this.height;
-    };
-    GridModel.prototype.getExtryTileX = function () {
-        return this.entryTileX;
-    };
-    GridModel.prototype.getExtryTileY = function () {
-        return this.entryTileY;
-    };
-    GridModel.prototype.getExitTileX = function () {
-        return this.exitTileX;
-    };
-    GridModel.prototype.getExitTileY = function () {
-        return this.exitTileY;
-    };
     return GridModel;
 }());
 exports.GridModel = GridModel;
 
-},{"./TileState":8,"./TileType":9}],4:[function(require,module,exports){
+},{"./Direction":2,"./TileState":9,"./TileType":10}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("./TileType");
 var TileState_1 = require("./TileState");
 var Pair_1 = require("./Pair");
+var Direction_1 = require("./Direction");
 var GridView = /** @class */ (function () {
     function GridView(htmlCanvas, tileSize, gridModel) {
         this.htmlCanvas = htmlCanvas;
@@ -360,8 +434,9 @@ var GridView = /** @class */ (function () {
     };
     GridView.prototype.drawTileAndNeighbours = function (x, y) {
         this.drawTile(x, y);
-        for (var _i = 0, Directions_1 = Pair_1.Directions; _i < Directions_1.length; _i++) {
-            var d = Directions_1[_i];
+        for (var _i = 0, _a = Direction_1.getAllDirections(); _i < _a.length; _i++) {
+            var direction = _a[_i];
+            var d = Direction_1.getDirectionValue(direction);
             this.drawTile(x + d.x, y + d.y);
         }
     };
@@ -376,8 +451,7 @@ var GridView = /** @class */ (function () {
         var yStart = this.tileToCoordinateY(y);
         var xSize = this.tileSize + 2;
         var ySize = this.tileSize + 2;
-        var tileType = this.gridModel.getTileAt(x, y);
-        var tileState = this.gridModel.getStateAt(x, y);
+        var tileType = this.gridModel.getTypeAt(x, y);
         if (tileType == TileType_1.TileType.Wall) {
             this.canvas.fillStyle = '#0c264a';
             this.canvas.fillRect(xStart, yStart, xSize, ySize);
@@ -387,14 +461,7 @@ var GridView = /** @class */ (function () {
             this.clearTile(x, y);
             this.canvas.fillStyle = '#ffffff';
             this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
-            if (tileState == TileState_1.TileState.Discovered) {
-                this.canvas.fillStyle = '#ad3df2';
-                this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
-            }
-            else if (tileState == TileState_1.TileState.Visited) {
-                this.canvas.fillStyle = '#a85e32';
-                this.canvas.fillRect(xStart + 12, yStart + 12, xSize - 24, ySize - 24);
-            }
+            this.printStateDetail(x, y);
         }
         else if (tileType == TileType_1.TileType.Entry) {
             this.clearTile(x, y);
@@ -446,17 +513,17 @@ var GridView = /** @class */ (function () {
         var yStart = this.tileToCoordinateY(y);
         var xSize = this.tileSize + 2;
         var ySize = this.tileSize + 2;
-        if (this.gridModel.getTileAt(x, y - 1) == TileType_1.TileType.Wall) {
+        if (this.gridModel.getTypeAt(x, y - 1) == TileType_1.TileType.Wall) {
             yStart++;
             ySize--;
         }
-        if (this.gridModel.getTileAt(x + 1, y) == TileType_1.TileType.Wall) {
+        if (this.gridModel.getTypeAt(x + 1, y) == TileType_1.TileType.Wall) {
             xSize--;
         }
-        if (this.gridModel.getTileAt(x, y + 1) == TileType_1.TileType.Wall) {
+        if (this.gridModel.getTypeAt(x, y + 1) == TileType_1.TileType.Wall) {
             ySize--;
         }
-        if (this.gridModel.getTileAt(x - 1, y) == TileType_1.TileType.Wall) {
+        if (this.gridModel.getTypeAt(x - 1, y) == TileType_1.TileType.Wall) {
             xStart++;
             xSize--;
         }
@@ -474,10 +541,10 @@ var GridView = /** @class */ (function () {
         var yStart = this.tileToCoordinateY(y);
         var xSize = this.tileSize + 2;
         var ySize = this.tileSize + 2;
-        var top = (this.gridModel.getTileAt(x, y - 1) == TileType_1.TileType.Wall);
-        var right = (this.gridModel.getTileAt(x + 1, y) == TileType_1.TileType.Wall);
-        var bottom = (this.gridModel.getTileAt(x, y + 1) == TileType_1.TileType.Wall);
-        var left = (this.gridModel.getTileAt(x - 1, y) == TileType_1.TileType.Wall);
+        var top = (this.gridModel.getTypeAt(x, y - 1) == TileType_1.TileType.Wall);
+        var right = (this.gridModel.getTypeAt(x + 1, y) == TileType_1.TileType.Wall);
+        var bottom = (this.gridModel.getTypeAt(x, y + 1) == TileType_1.TileType.Wall);
+        var left = (this.gridModel.getTypeAt(x - 1, y) == TileType_1.TileType.Wall);
         this.canvas.fillStyle = '#3af0c8';
         if (right && left && !top && !bottom) {
             this.canvas.fillRect(xStart, yStart + 15, xSize, ySize - 30);
@@ -496,6 +563,39 @@ var GridView = /** @class */ (function () {
             if (left)
                 this.canvas.fillRect(xStart, yStart + 15, xSize - 23, ySize - 30);
         }
+    };
+    GridView.prototype.printStateDetail = function (x, y) {
+        if (this.canvas == null)
+            return;
+        if (x < 0 || x >= this.gridWidth)
+            return;
+        if (y < 0 || y >= this.gridHeight)
+            return;
+        var xStart = this.tileToCoordinateX(x);
+        var yStart = this.tileToCoordinateY(y);
+        var xSize = this.tileSize + 2;
+        var ySize = this.tileSize + 2;
+        var tileState = this.gridModel.getStateAt(x, y);
+        var direction = this.gridModel.getDirectionAt(x, y);
+        if (tileState == TileState_1.TileState.Undiscovered)
+            return;
+        if (tileState == TileState_1.TileState.Discovered) {
+            this.canvas.fillStyle = '#ad3df2';
+        }
+        else if (tileState == TileState_1.TileState.Visited) {
+            this.canvas.fillStyle = '#a85e32';
+        }
+        else if (tileState == TileState_1.TileState.Path) {
+            this.canvas.fillStyle = '#f71b39';
+        }
+        else {
+            this.canvas.fillStyle = '#f01fff';
+        }
+        this.canvas.beginPath();
+        this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+        this.canvas.fill();
+        var d = Direction_1.getDirectionValue(direction);
+        this.canvas.fillRect(xStart + 15 + (d.x * 7), yStart + 15 + (d.y * 7), xSize - 30, ySize - 30);
     };
     GridView.prototype.tileToCoordinateX = function (x) {
         return this.offsetX + (x * (this.tileSize + 1));
@@ -542,7 +642,7 @@ var GridView = /** @class */ (function () {
     GridView.prototype.handleOnMouseMoveEvent = function (event) {
         var x = this.coordinateXToTile(event.offsetX);
         var y = this.coordinateYToTile(event.offsetY);
-        var tileType = this.gridModel.getTileAt(x, y);
+        var tileType = this.gridModel.getTypeAt(x, y);
         if (tileType == TileType_1.TileType.Entry || tileType == TileType_1.TileType.Exit) {
             document.body.style.cursor = 'pointer';
         }
@@ -602,7 +702,7 @@ var GridView = /** @class */ (function () {
 }());
 exports.GridView = GridView;
 
-},{"./Pair":5,"./TileState":8,"./TileType":9}],5:[function(require,module,exports){
+},{"./Direction":2,"./Pair":6,"./TileState":9,"./TileType":10}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair = /** @class */ (function () {
@@ -613,14 +713,8 @@ var Pair = /** @class */ (function () {
     return Pair;
 }());
 exports.Pair = Pair;
-exports.Directions = [
-    new Pair(0, -1),
-    new Pair(1, 0),
-    new Pair(0, 1),
-    new Pair(-1, 0)
-];
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -659,17 +753,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var TileType_1 = require("./TileType");
+var TileState_1 = require("./TileState");
+var Direction_1 = require("./Direction");
 var Pathfinder = /** @class */ (function () {
     function Pathfinder(gridModel) {
         this.gridModel = gridModel;
         this.running = false;
         this.runningId = 0;
-        this.stepDelay = 20;
+        this.stepDelay = 50;
         this.onstep = null;
     }
     Pathfinder.prototype.reset = function () {
         this.running = false;
-        this.stepDelay = 20;
+        this.exitFound = false;
+        this.stepDelay = 50;
         this.unactivated = true;
     };
     Pathfinder.prototype.run = function () {
@@ -695,7 +793,10 @@ var Pathfinder = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         if (!(this.running && runningId == this.runningId)) return [3 /*break*/, 3];
-                        this.step();
+                        if (!this.exitFound)
+                            this.step();
+                        else
+                            this.stepPath();
                         return [4 /*yield*/, this.delay(this.stepDelay)];
                     case 2:
                         _a.sent();
@@ -706,6 +807,19 @@ var Pathfinder = /** @class */ (function () {
         });
     };
     ;
+    Pathfinder.prototype.stepPath = function () {
+        if (this.gridModel.getTypeAt(this.pathX, this.pathY) == TileType_1.TileType.Entry) {
+            this.running = false;
+            return;
+        }
+        this.gridModel.setStateAt(this.pathX, this.pathY, TileState_1.TileState.Path);
+        var direction = this.gridModel.getDirectionAt(this.pathX, this.pathY);
+        if (this.onstep != null)
+            this.onstep(this.pathX, this.pathY);
+        var d = Direction_1.getDirectionValue(direction);
+        this.pathX += d.x;
+        this.pathY += d.y;
+    };
     Pathfinder.prototype.delay = function (ms) {
         return new Promise(function (resolve) { return setTimeout(resolve, ms); });
     };
@@ -713,7 +827,7 @@ var Pathfinder = /** @class */ (function () {
 }());
 exports.Pathfinder = Pathfinder;
 
-},{}],7:[function(require,module,exports){
+},{"./Direction":2,"./TileState":9,"./TileType":10}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Queue = /** @class */ (function () {
@@ -742,7 +856,7 @@ var Queue = /** @class */ (function () {
 }());
 exports.Queue = Queue;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileState;
@@ -753,7 +867,7 @@ var TileState;
     TileState[TileState["Path"] = 3] = "Path";
 })(TileState = exports.TileState || (exports.TileState = {}));
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType;
@@ -764,7 +878,7 @@ var TileType;
     TileType[TileType["Exit"] = 3] = "Exit";
 })(TileType = exports.TileType || (exports.TileType = {}));
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./Grid");
@@ -874,4 +988,4 @@ function setupTouchEvents() {
     }
 }
 
-},{"./Grid":2}]},{},[10]);
+},{"./Grid":3}]},{},[11]);

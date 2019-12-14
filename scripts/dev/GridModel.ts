@@ -1,11 +1,13 @@
 import { TileType } from './TileType';
 import { TileState } from './TileState';
+import { Direction } from './Direction';
 
 export class GridModel {
   private width!: number;
   private height!: number;
   private tiles!: TileType[][];
   private states!: TileState[][];
+  private directions!: Direction[][];
   private entryTileX!: number;
   private entryTileY!: number;
   private entryPreviousTile!: TileType;
@@ -23,14 +25,21 @@ export class GridModel {
     
     this.tiles = new Array<TileType[]>(height);
     this.states = new Array<TileState[]>(height);
+    this.directions = new Array<Direction[]>(height);
 
     for (let i = 0; i < this.height; i++) {
       this.tiles[i] = new Array<TileType>(this.width);
       this.states[i] = new Array<TileState>(this.width);
+      this.directions[i] = new Array<Direction>(this.width);
     }
 
-    this.resetTiles();
-    this.resetStates();
+    for (let i = 0; i < this.height; i++) {
+      for (let j = 0; j < this.width; j++) {
+        this.tiles[i][j] = TileType.Floor;
+        this.states[i][j] = TileState.Undiscovered;
+        this.directions[i][j] = Direction.None;
+      }
+    }
 
     if (this.width < 5) return;
     if (this.height < 1) return;
@@ -50,14 +59,6 @@ export class GridModel {
     this.tiles[this.exitTileY][this.exitTileX] = TileType.Exit;
   }
 
-  private resetTiles(): void {
-    for (let i = 0; i < this.height; i++) {
-      for (let j = 0; j < this.width; j++) {
-        this.tiles[i][j] = TileType.Floor;
-      }
-    }
-  }
-
   public resetStates(): void {
     for (let i = 0; i < this.height; i++) {
       for (let j = 0; j < this.width; j++) {
@@ -66,7 +67,7 @@ export class GridModel {
     }
   }
 
-  public getTileAt(x: number, y: number): TileType | null {
+  public getTypeAt(x: number, y: number): TileType | null {
     if (x < 0 || x >= this.width) return null;
     if (y < 0 || y >= this.height) return null;
     
@@ -80,11 +81,42 @@ export class GridModel {
     return this.states[y][x];
   }
 
-  public setTileAt(x: number, y: number, tileType: TileType): void {
+  public getDirectionAt(x: number, y: number): Direction | null {
+    if (x < 0 || x >= this.width) return null;
+    if (y < 0 || y >= this.height) return null;
+
+    return this.directions[y][x];
+  }
+
+  public getWidth(): number {
+    return this.width;
+  }
+
+  public getHeight(): number {
+    return this.height;
+  }
+
+  public getEntryTileX(): number {
+    return this.entryTileX;
+  }
+
+  public getEntryTileY(): number {
+    return this.entryTileY;
+  }
+
+  public getExitTileX(): number {
+    return this.exitTileX;
+  }
+
+  public getExitTileY(): number {
+    return this.exitTileY;
+  }
+
+  public setTypeAt(x: number, y: number, tileType: TileType): void {
     if (x < 0 || x >= this.width) return;
     if (y < 0 || y >= this.height) return;
 
-    const currentTileType: TileType = this.getTileAt(x, y)!;
+    const currentTileType: TileType = this.getTypeAt(x, y)!;
     
     if (currentTileType == TileType.Entry) this.entryPreviousTile = tileType;
     else if (currentTileType == TileType.Exit) this.exitPreviousTile = tileType;
@@ -98,6 +130,13 @@ export class GridModel {
     if (y < 0 || y >= this.height) return;
     
     this.states[y][x] = tileState;
+  }
+
+  public setDirectionAt(x: number, y: number, direction: Direction): void {
+    if (x < 0 || x >= this.width) return;
+    if (y < 0 || y >= this.height) return;
+    
+    this.directions[y][x] = direction;
   }
 
   public setEntryTileAt(x: number, y: number): void {
@@ -120,29 +159,5 @@ export class GridModel {
     this.exitTileY = y;
     this.exitPreviousTile = this.tiles[y][x];
     this.tiles[y][x] = TileType.Exit;
-  }
-
-  public getWidth(): number {
-    return this.width;
-  }
-
-  public getHeight(): number {
-    return this.height;
-  }
-
-  public getExtryTileX(): number {
-    return this.entryTileX;
-  }
-
-  public getExtryTileY(): number {
-    return this.entryTileY;
-  }
-
-  public getExitTileX(): number {
-    return this.exitTileX;
-  }
-
-  public getExitTileY(): number {
-    return this.exitTileY;
   }
 }

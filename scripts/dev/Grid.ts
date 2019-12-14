@@ -63,7 +63,7 @@ export class Grid {
   }
 
   private handleOnTileTypeSelectEvent(x: number, y: number): void {
-    const newTileType: TileType | null = this.gridModel.getTileAt(x, y);
+    const newTileType: TileType | null = this.gridModel.getTypeAt(x, y);
     if (newTileType != null) {
       if (newTileType == TileType.Wall) {
         this.currentTileType = TileType.Floor;
@@ -84,30 +84,30 @@ export class Grid {
   }
 
   private handleOnTileClickEvent(x: number, y: number): void {
-    const tileType: TileType | null = this.gridModel.getTileAt(x, y);
+    const tileType: TileType | null = this.gridModel.getTypeAt(x, y);
 
     if (tileType == null) return;
     if (tileType == this.currentTileType) return;
 
     if (tileType == TileType.Entry || tileType == TileType.Exit) {
-      this.gridModel.setTileAt(x, y, this.currentTileType);
+      this.gridModel.setTypeAt(x, y, this.currentTileType);
     } else if (this.currentTileType == TileType.Entry) {
-      const oldEntryTileX = this.gridModel.getExtryTileX();
-      const oldEntryTileY = this.gridModel.getExtryTileY();
-      this.gridModel.setTileAt(x, y, TileType.Entry);
+      const oldEntryTileX = this.gridModel.getEntryTileX();
+      const oldEntryTileY = this.gridModel.getEntryTileY();
+      this.gridModel.setTypeAt(x, y, TileType.Entry);
       this.gridView.drawTileAndNeighbours(x, y);
       this.gridView.drawTileAndNeighbours(oldEntryTileX, oldEntryTileY);
     } else if (this.currentTileType == TileType.Exit) {
       const oldExitTileX = this.gridModel.getExitTileX();
       const oldExitTileY = this.gridModel.getExitTileY();
-      this.gridModel.setTileAt(x, y, TileType.Exit);
+      this.gridModel.setTypeAt(x, y, TileType.Exit);
       this.gridView.drawTileAndNeighbours(x, y);  
       this.gridView.drawTileAndNeighbours(oldExitTileX, oldExitTileY);      
     } else {
-      this.gridModel.setTileAt(x, y, this.currentTileType);
+      this.gridModel.setTypeAt(x, y, this.currentTileType);
       this.gridView.drawTileAndNeighbours(x, y);
     }
-    
+
     if (!this.pathfinder.isUnactivated()) {
       this.gridModel.resetStates();
       this.gridView.draw();
