@@ -605,20 +605,20 @@ var GridView = /** @class */ (function () {
         if (tileState == TileState_1.TileState.Path) {
             this.canvas.fillStyle = '#f71b39';
             this.canvas.beginPath();
-            this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+            this.canvas.arc(xStart + 17, yStart + 17, 5, 0, 2 * Math.PI);
             this.canvas.fill();
             var top_1 = (this.gridModel.getStateAt(x, y - 1) == TileState_1.TileState.Path);
             var right = (this.gridModel.getStateAt(x + 1, y) == TileState_1.TileState.Path);
             var bottom = (this.gridModel.getStateAt(x, y + 1) == TileState_1.TileState.Path);
             var left = (this.gridModel.getStateAt(x - 1, y) == TileState_1.TileState.Path);
             if (top_1)
-                this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 22);
+                this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 21);
             if (right)
-                this.canvas.fillRect(xStart + 22, yStart + 15, xSize - 22, ySize - 30);
+                this.canvas.fillRect(xStart + 21, yStart + 15, xSize - 21, ySize - 30);
             if (bottom)
-                this.canvas.fillRect(xStart + 15, yStart + 22, xSize - 30, ySize - 22);
+                this.canvas.fillRect(xStart + 15, yStart + 21, xSize - 30, ySize - 21);
             if (left)
-                this.canvas.fillRect(xStart, yStart + 15, xSize - 22, ySize - 30);
+                this.canvas.fillRect(xStart, yStart + 15, xSize - 21, ySize - 30);
         }
         else {
             if (tileState == TileState_1.TileState.Discovered) {
@@ -631,10 +631,34 @@ var GridView = /** @class */ (function () {
                 this.canvas.fillStyle = '#f01fff';
             }
             this.canvas.beginPath();
-            this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+            this.canvas.arc(xStart + 17, yStart + 17, 5, 0, 2 * Math.PI);
             this.canvas.fill();
-            var d = Direction_1.getDirectionValue(direction);
-            this.canvas.fillRect(xStart + 15 + (d.x * 7), yStart + 15 + (d.y * 7), xSize - 30, ySize - 30);
+            this.canvas.beginPath();
+            if (direction == Direction_1.Direction.Up) {
+                this.canvas.moveTo(xStart + 17, yStart + 7);
+                this.canvas.lineTo(xStart + 21, yStart + 15);
+                this.canvas.lineTo(xStart + 13, yStart + 15);
+                this.canvas.lineTo(xStart + 17, yStart + 7);
+            }
+            else if (direction == Direction_1.Direction.Right) {
+                this.canvas.moveTo(xStart + 27, yStart + 17);
+                this.canvas.lineTo(xStart + 19, yStart + 21);
+                this.canvas.lineTo(xStart + 19, yStart + 13);
+                this.canvas.lineTo(xStart + 27, yStart + 17);
+            }
+            else if (direction == Direction_1.Direction.Down) {
+                this.canvas.moveTo(xStart + 17, yStart + 27);
+                this.canvas.lineTo(xStart + 21, yStart + 19);
+                this.canvas.lineTo(xStart + 13, yStart + 19);
+                this.canvas.lineTo(xStart + 17, yStart + 27);
+            }
+            else if (direction == Direction_1.Direction.Left) {
+                this.canvas.moveTo(xStart + 7, yStart + 17);
+                this.canvas.lineTo(xStart + 15, yStart + 21);
+                this.canvas.lineTo(xStart + 15, yStart + 13);
+                this.canvas.lineTo(xStart + 7, yStart + 17);
+            }
+            this.canvas.fill();
         }
     };
     GridView.prototype.tileToCoordinateX = function (x) {

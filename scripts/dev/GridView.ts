@@ -222,7 +222,7 @@ export class GridView {
       this.canvas.fillStyle = '#f71b39';
 
       this.canvas.beginPath();
-      this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+      this.canvas.arc(xStart + 17, yStart + 17, 5, 0, 2 * Math.PI);
       this.canvas.fill();
 
       const top: boolean = (this.gridModel.getStateAt(x, y - 1) == TileState.Path);
@@ -230,10 +230,10 @@ export class GridView {
       const bottom: boolean = (this.gridModel.getStateAt(x, y + 1) == TileState.Path);
       const left: boolean = (this.gridModel.getStateAt(x - 1, y) == TileState.Path);
 
-      if (top) this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 22);
-      if (right) this.canvas.fillRect(xStart + 22, yStart + 15, xSize - 22, ySize - 30);
-      if (bottom) this.canvas.fillRect(xStart + 15, yStart + 22, xSize - 30, ySize - 22);
-      if (left) this.canvas.fillRect(xStart, yStart + 15, xSize - 22, ySize - 30);
+      if (top) this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 21);
+      if (right) this.canvas.fillRect(xStart + 21, yStart + 15, xSize - 21, ySize - 30);
+      if (bottom) this.canvas.fillRect(xStart + 15, yStart + 21, xSize - 30, ySize - 21);
+      if (left) this.canvas.fillRect(xStart, yStart + 15, xSize - 21, ySize - 30);
     } else {
       if (tileState == TileState.Discovered) {
         this.canvas.fillStyle = '#ad3df2';
@@ -244,11 +244,32 @@ export class GridView {
       }
 
       this.canvas.beginPath();
-      this.canvas.arc(xStart + 17, yStart + 17, 6, 0, 2 * Math.PI);
+      this.canvas.arc(xStart + 17, yStart + 17, 5, 0, 2 * Math.PI);
       this.canvas.fill();
 
-      const d: Pair = getDirectionValue(direction);
-      this.canvas.fillRect(xStart + 15 + (d.x * 7), yStart + 15 + (d.y * 7), xSize - 30, ySize - 30);
+      this.canvas.beginPath();
+      if (direction == Direction.Up) {
+        this.canvas.moveTo(xStart + 17, yStart + 7);
+        this.canvas.lineTo(xStart + 21, yStart + 15);
+        this.canvas.lineTo(xStart + 13, yStart + 15);
+        this.canvas.lineTo(xStart + 17, yStart + 7);
+      } else if (direction == Direction.Right) {
+        this.canvas.moveTo(xStart + 27, yStart + 17);
+        this.canvas.lineTo(xStart + 19, yStart + 21);
+        this.canvas.lineTo(xStart + 19, yStart + 13);
+        this.canvas.lineTo(xStart + 27, yStart + 17);
+      } else if (direction == Direction.Down) {
+        this.canvas.moveTo(xStart + 17, yStart + 27);
+        this.canvas.lineTo(xStart + 21, yStart + 19);
+        this.canvas.lineTo(xStart + 13, yStart + 19);
+        this.canvas.lineTo(xStart + 17, yStart + 27);
+      } else if (direction == Direction.Left) {
+        this.canvas.moveTo(xStart + 7, yStart + 17);
+        this.canvas.lineTo(xStart + 15, yStart + 21);
+        this.canvas.lineTo(xStart + 15, yStart + 13);
+        this.canvas.lineTo(xStart + 7, yStart + 17);
+      }
+      this.canvas.fill();
     }
   }
 
