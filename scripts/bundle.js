@@ -590,7 +590,7 @@ var GridView = /** @class */ (function () {
             this.canvas.fillRect(xStart, yStart + (15 * s), xSize, ySize - (30 * s));
         }
         else if (up && down && !right && !left) {
-            this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize);
+            this.canvas.fillRect(xStart + (15 * s), yStart, xSize - (30 * s), ySize);
         }
         else {
             this.canvas.fillRect(xStart + (13 * s), yStart + (13 * s), xSize - (26 * s), ySize - (26 * s));
@@ -611,10 +611,13 @@ var GridView = /** @class */ (function () {
             return;
         if (y < 0 || y >= this.gridHeight)
             return;
+        var s = this.scale;
         var xStart = this.tileToCoordinateX(x);
         var yStart = this.tileToCoordinateY(y);
-        var xSize = (Constants_1.Constants.TileSize * this.scale) + 2;
-        var ySize = (Constants_1.Constants.TileSize * this.scale) + 2;
+        var xCenter = xStart + (17 * s);
+        var yCenter = yStart + (17 * s);
+        var xSize = (Constants_1.Constants.TileSize * s) + 2;
+        var ySize = (Constants_1.Constants.TileSize * s) + 2;
         var tileState = this.gridModel.getStateAt(x, y);
         var direction = this.gridModel.getDirectionAt(x, y);
         if (tileState == TileState_1.TileState.Undiscovered)
@@ -640,41 +643,41 @@ var GridView = /** @class */ (function () {
             this.canvas.fillStyle = '#f01fff';
         }
         this.canvas.beginPath();
-        this.canvas.arc(xStart + 17, yStart + 17, 5, 0, 2 * Math.PI);
+        this.canvas.arc(xCenter, yCenter, (5 * s), 0, 2 * Math.PI);
         this.canvas.fill();
         this.canvas.beginPath();
         if (direction == Direction_1.Direction.Up && !up) {
-            this.canvas.moveTo(xStart + 17, yStart + 7);
-            this.canvas.lineTo(xStart + 21, yStart + 15);
-            this.canvas.lineTo(xStart + 13, yStart + 15);
-            this.canvas.lineTo(xStart + 17, yStart + 7);
+            this.canvas.moveTo(xCenter, yStart + (7 * s));
+            this.canvas.lineTo(xCenter + (4 * s), yCenter - (2 * s));
+            this.canvas.lineTo(xCenter - (4 * s), yCenter - (2 * s));
+            this.canvas.lineTo(xCenter, yStart + (7 * s));
         }
         else if (direction == Direction_1.Direction.Right && !right) {
-            this.canvas.moveTo(xStart + 27, yStart + 17);
-            this.canvas.lineTo(xStart + 19, yStart + 21);
-            this.canvas.lineTo(xStart + 19, yStart + 13);
-            this.canvas.lineTo(xStart + 27, yStart + 17);
+            this.canvas.moveTo(xStart + (27 * s), yCenter);
+            this.canvas.lineTo(xCenter + (2 * s), yCenter + (4 * s));
+            this.canvas.lineTo(xCenter + (2 * s), yCenter - (4 * s));
+            this.canvas.lineTo(xStart + (27 * s), yCenter);
         }
         else if (direction == Direction_1.Direction.Down && !down) {
-            this.canvas.moveTo(xStart + 17, yStart + 27);
-            this.canvas.lineTo(xStart + 21, yStart + 19);
-            this.canvas.lineTo(xStart + 13, yStart + 19);
-            this.canvas.lineTo(xStart + 17, yStart + 27);
+            this.canvas.moveTo(xCenter, yStart + (27 * s));
+            this.canvas.lineTo(xCenter + (4 * s), yCenter + (2 * s));
+            this.canvas.lineTo(xCenter - (4 * s), yCenter + (2 * s));
+            this.canvas.lineTo(xCenter, yStart + (27 * s));
         }
         else if (direction == Direction_1.Direction.Left && !left) {
-            this.canvas.moveTo(xStart + 7, yStart + 17);
-            this.canvas.lineTo(xStart + 15, yStart + 21);
-            this.canvas.lineTo(xStart + 15, yStart + 13);
-            this.canvas.lineTo(xStart + 7, yStart + 17);
+            this.canvas.moveTo(xStart + (7 * s), yCenter);
+            this.canvas.lineTo(xCenter - (2 * s), yCenter + (4 * s));
+            this.canvas.lineTo(xCenter - (2 * s), yCenter - (4 * s));
+            this.canvas.lineTo(xStart + (7 * s), yCenter);
         }
         if (up)
-            this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 21);
+            this.canvas.fillRect(xStart + (15 * s), yStart, xSize - (30 * s), ySize - (20 * s));
         if (right)
-            this.canvas.fillRect(xStart + 21, yStart + 15, xSize - 21, ySize - 30);
+            this.canvas.fillRect(xStart + (20 * s), yStart + (15 * s), xSize - (20 * s), ySize - (30 * s));
         if (down)
-            this.canvas.fillRect(xStart + 15, yStart + 21, xSize - 30, ySize - 21);
+            this.canvas.fillRect(xStart + (15 * s), yStart + (20 * s), xSize - (30 * s), ySize - (20 * s));
         if (left)
-            this.canvas.fillRect(xStart, yStart + 15, xSize - 21, ySize - 30);
+            this.canvas.fillRect(xStart, yStart + (15 * s), xSize - (20 * s), ySize - (30 * s));
         this.canvas.fill();
     };
     GridView.prototype.tileToCoordinateX = function (x) {

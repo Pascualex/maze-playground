@@ -201,7 +201,7 @@ export class GridView {
     if (right && left && !up && !down) {
       this.canvas.fillRect(xStart, yStart + (15 * s), xSize, ySize - (30 * s));
     } else if (up && down && !right && !left) {
-      this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize);
+      this.canvas.fillRect(xStart + (15 * s), yStart, xSize - (30 * s), ySize);
     } else {
       this.canvas.fillRect(xStart + (13 * s), yStart + (13 * s), xSize - (26 * s), ySize - (26 * s));
       if (up) this.canvas.fillRect(xStart + (15 * s), yStart, xSize - (30 * s), ySize - (23 * s));
@@ -216,10 +216,14 @@ export class GridView {
     if (x < 0 || x >= this.gridWidth) return;
     if (y < 0 || y >= this.gridHeight) return;
 
+    const s: number = this.scale;
+
     const xStart: number = this.tileToCoordinateX(x);
     const yStart: number = this.tileToCoordinateY(y);
-    const xSize: number = (Constants.TileSize * this.scale) + 2;
-    const ySize: number = (Constants.TileSize * this.scale) + 2;
+    const xCenter: number = xStart + (17 * s);
+    const yCenter: number = yStart + (17 * s);
+    const xSize: number = (Constants.TileSize * s) + 2;
+    const ySize: number = (Constants.TileSize * s) + 2;
 
     const tileState: TileState = this.gridModel.getStateAt(x, y)!;
     const direction: Direction = this.gridModel.getDirectionAt(x, y)!;
@@ -246,36 +250,36 @@ export class GridView {
     }
 
     this.canvas.beginPath();
-    this.canvas.arc(xStart + 17, yStart + 17, 5, 0, 2 * Math.PI);
+    this.canvas.arc(xCenter, yCenter, (5 * s), 0, 2 * Math.PI);
     this.canvas.fill();
 
     this.canvas.beginPath();
     if (direction == Direction.Up && !up) {
-      this.canvas.moveTo(xStart + 17, yStart + 7);
-      this.canvas.lineTo(xStart + 21, yStart + 15);
-      this.canvas.lineTo(xStart + 13, yStart + 15);
-      this.canvas.lineTo(xStart + 17, yStart + 7);
+      this.canvas.moveTo(xCenter, yStart + (7 * s));
+      this.canvas.lineTo(xCenter + (4 * s), yCenter - (2 * s));
+      this.canvas.lineTo(xCenter - (4 * s), yCenter - (2 * s));
+      this.canvas.lineTo(xCenter, yStart + (7 * s));
     } else if (direction == Direction.Right && !right) {
-      this.canvas.moveTo(xStart + 27, yStart + 17);
-      this.canvas.lineTo(xStart + 19, yStart + 21);
-      this.canvas.lineTo(xStart + 19, yStart + 13);
-      this.canvas.lineTo(xStart + 27, yStart + 17);
+      this.canvas.moveTo(xStart + (27 * s), yCenter);
+      this.canvas.lineTo(xCenter + (2 * s), yCenter + (4 * s));
+      this.canvas.lineTo(xCenter + (2 * s), yCenter - (4 * s));
+      this.canvas.lineTo(xStart + (27 * s), yCenter);
     } else if (direction == Direction.Down && !down) {
-      this.canvas.moveTo(xStart + 17, yStart + 27);
-      this.canvas.lineTo(xStart + 21, yStart + 19);
-      this.canvas.lineTo(xStart + 13, yStart + 19);
-      this.canvas.lineTo(xStart + 17, yStart + 27);
+      this.canvas.moveTo(xCenter, yStart + (27 * s));
+      this.canvas.lineTo(xCenter + (4 * s), yCenter + (2 * s));
+      this.canvas.lineTo(xCenter - (4 * s), yCenter + (2 * s));
+      this.canvas.lineTo(xCenter, yStart + (27 * s));
     } else if (direction == Direction.Left && !left) {
-      this.canvas.moveTo(xStart + 7, yStart + 17);
-      this.canvas.lineTo(xStart + 15, yStart + 21);
-      this.canvas.lineTo(xStart + 15, yStart + 13);
-      this.canvas.lineTo(xStart + 7, yStart + 17);
+      this.canvas.moveTo(xStart + (7 * s), yCenter);
+      this.canvas.lineTo(xCenter - (2 * s), yCenter + (4 * s));
+      this.canvas.lineTo(xCenter - (2 * s), yCenter - (4 * s));
+      this.canvas.lineTo(xStart + (7 * s), yCenter);
     }
 
-    if (up) this.canvas.fillRect(xStart + 15, yStart, xSize - 30, ySize - 21);
-    if (right) this.canvas.fillRect(xStart + 21, yStart + 15, xSize - 21, ySize - 30);
-    if (down) this.canvas.fillRect(xStart + 15, yStart + 21, xSize - 30, ySize - 21);
-    if (left) this.canvas.fillRect(xStart, yStart + 15, xSize - 21, ySize - 30);
+    if (up) this.canvas.fillRect(xStart + (15 * s), yStart, xSize - (30 * s), ySize - (20 * s));
+    if (right) this.canvas.fillRect(xStart + (20 * s), yStart + (15 * s), xSize - (20 * s), ySize - (30 * s));
+    if (down) this.canvas.fillRect(xStart + (15 * s), yStart + (20 * s), xSize - (30 * s), ySize - (20 * s));
+    if (left) this.canvas.fillRect(xStart, yStart + (15 * s), xSize - (20 * s), ySize - (30 * s));
 
     this.canvas.fill();
   }
