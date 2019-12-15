@@ -4,6 +4,7 @@ import { Pathfinder } from './Pathfinder';
 import { BFSPathfinder } from './BFSPathfinder';
 import { DFSPathfinder } from './DFSPathfinder';
 import { TileType } from './TileType';
+import { Constants } from './Constants'
 
 export class Grid {
   private htmlCanvas: HTMLCanvasElement;
@@ -12,14 +13,15 @@ export class Grid {
   private pathfinder: Pathfinder;
   private currentTileType: TileType;
 
-  constructor(htmlCanvas: HTMLCanvasElement, tileSize: number) {
+  constructor(htmlCanvas: HTMLCanvasElement, scale: number) {
     this.htmlCanvas = htmlCanvas;
 
-    const gridWidth: number = Math.floor((htmlCanvas.width - 1) / (tileSize + 1));
-    const gridHeight: number = Math.floor((htmlCanvas.height - 1) / (tileSize + 1));
+    const realTileSize: number = (Constants.TileSize * scale) + 1
+    const gridWidth: number = Math.floor((htmlCanvas.width - 1) / realTileSize);
+    const gridHeight: number = Math.floor((htmlCanvas.height - 1) / realTileSize);
 
     this.gridModel = new GridModel(gridWidth, gridHeight);
-    this.gridView = new GridView(htmlCanvas, tileSize, this.gridModel);
+    this.gridView = new GridView(htmlCanvas, scale, this.gridModel);
     this.pathfinder = new BFSPathfinder(this.gridModel);
 
     this.currentTileType = TileType.Floor;
@@ -29,12 +31,13 @@ export class Grid {
     this.gridView.draw();
   }
 
-  public reset(tileSize: number): void {
-    const gridWidth: number = Math.floor((this.htmlCanvas.width - 1) / (tileSize + 1));
-    const gridHeight: number = Math.floor((this.htmlCanvas.height - 1) / (tileSize + 1));
+  public reset(scale: number): void {
+    const realTileSize: number = (Constants.TileSize * scale) + 1
+    const gridWidth: number = Math.floor((this.htmlCanvas.width - 1) / realTileSize);
+    const gridHeight: number = Math.floor((this.htmlCanvas.height - 1) / realTileSize);
 
     this.gridModel.reset(gridWidth, gridHeight);
-    this.gridView.reset(tileSize);
+    this.gridView.reset(scale);
     this.pathfinder.reset();
 
     this.currentTileType = TileType.Floor;

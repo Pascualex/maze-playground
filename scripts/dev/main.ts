@@ -18,9 +18,11 @@ window.onresize = () => {
 
 function createGrid(): void {    
   if (htmlGrid instanceof HTMLCanvasElement) {
+    let scale: number = 1;
     htmlGrid.width = window.innerWidth;
     htmlGrid.height = window.innerHeight;
-    grid = new Grid(htmlGrid, 32);
+    if ((window.innerWidth / window.devicePixelRatio) <= 600) scale = 2;
+    grid = new Grid(htmlGrid, scale);
   } else {
     grid = null;
   }
@@ -28,9 +30,11 @@ function createGrid(): void {
 
 function resetGrid(): void {
   if (htmlGrid instanceof HTMLCanvasElement) {
+    let scale: number = 1;
     htmlGrid.width = window.innerWidth;
     htmlGrid.height = window.innerHeight;
-    if (grid != null) grid.reset(32);
+    if ((window.innerWidth / window.devicePixelRatio) <= 600) scale = 2;
+    if (grid != null) grid.reset(scale);
   }
 }
 
