@@ -33,11 +33,15 @@ export class GridModel {
       this.directions[i] = new Array<Direction>(this.width);
     }
 
+    this.resetTiles();
+    this.resetStates();
+    this.resetDirections();
+  }
+
+  public resetTiles(): void {
     for (let i = 0; i < this.height; i++) {
       for (let j = 0; j < this.width; j++) {
         this.tiles[i][j] = TileType.Floor;
-        this.states[i][j] = TileState.Undiscovered;
-        this.directions[i][j] = Direction.None;
       }
     }
 
@@ -63,6 +67,14 @@ export class GridModel {
     for (let i = 0; i < this.height; i++) {
       for (let j = 0; j < this.width; j++) {
         this.states[i][j] = TileState.Undiscovered;
+      }
+    }
+  }
+
+  public resetDirections(): void {
+    for (let i = 0; i < this.height; i++) {
+      for (let j = 0; j < this.width; j++) {
+        this.directions[i][j] = Direction.None;
       }
     }
   }

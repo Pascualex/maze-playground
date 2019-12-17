@@ -1,11 +1,11 @@
 import { Pair } from './Pair';
 
 export enum Direction {
+  None,
   Up,
   Right,
   Down,
-  Left,
-  None
+  Left
 }
 
 export function getAllDirections(): Direction[] {

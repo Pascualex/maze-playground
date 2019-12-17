@@ -43,30 +43,28 @@ var BFSPathfinder = /** @class */ (function (_super) {
             return;
         }
         var current = this.discoveredTiles.dequeue();
-        this.gridModel.setStateAt(current.x, current.y, TileState_1.TileState.Visited);
         if (this.onstep != null)
-            this.onstep(current.x, current.y);
+            this.onstep(current.x, current.y, TileState_1.TileState.Visited, null);
         for (var _i = 0, _a = Direction_1.getAllDirections(); _i < _a.length; _i++) {
             var direction = _a[_i];
             var d = Direction_1.getDirectionValue(direction);
             if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState_1.TileState.Undiscovered) {
                 if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Exit) {
                     var invertedDirection = Direction_1.invertDirection(direction);
-                    this.gridModel.setDirectionAt(current.x + d.x, current.y + d.y, invertedDirection);
                     this.exitFound = true;
                     this.pathX = current.x + d.x;
                     this.pathY = current.y + d.y;
-                    if (this.onstep != null)
-                        this.onstep(current.x + d.x, current.y + d.y);
+                    if (this.onstep != null) {
+                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                    }
                     return;
                 }
                 if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
-                    this.gridModel.setStateAt(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered);
                     var invertedDirection = Direction_1.invertDirection(direction);
-                    this.gridModel.setDirectionAt(current.x + d.x, current.y + d.y, invertedDirection);
                     this.discoveredTiles.enqueue(new Pair_1.Pair(current.x + d.x, current.y + d.y));
-                    if (this.onstep != null)
-                        this.onstep(current.x + d.x, current.y + d.y);
+                    if (this.onstep != null) {
+                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                    }
                 }
             }
         }
@@ -75,7 +73,7 @@ var BFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.BFSPathfinder = BFSPathfinder;
 
-},{"./Direction":3,"./Pair":7,"./Pathfinder":8,"./Queue":9,"./TileState":10,"./TileType":11}],2:[function(require,module,exports){
+},{"./Direction":3,"./Pair":9,"./Pathfinder":10,"./Queue":11,"./TileState":12,"./TileType":13}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Constants;
@@ -89,11 +87,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Pair_1 = require("./Pair");
 var Direction;
 (function (Direction) {
-    Direction[Direction["Up"] = 0] = "Up";
-    Direction[Direction["Right"] = 1] = "Right";
-    Direction[Direction["Down"] = 2] = "Down";
-    Direction[Direction["Left"] = 3] = "Left";
-    Direction[Direction["None"] = 4] = "None";
+    Direction[Direction["None"] = 0] = "None";
+    Direction[Direction["Up"] = 1] = "Up";
+    Direction[Direction["Right"] = 2] = "Right";
+    Direction[Direction["Down"] = 3] = "Down";
+    Direction[Direction["Left"] = 4] = "Left";
 })(Direction = exports.Direction || (exports.Direction = {}));
 function getAllDirections() {
     return [
@@ -148,12 +146,13 @@ function shuffle(array) {
     return array;
 }
 
-},{"./Pair":7}],4:[function(require,module,exports){
+},{"./Pair":9}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GridModel_1 = require("./GridModel");
 var GridView_1 = require("./GridView");
 var BFSPathfinder_1 = require("./BFSPathfinder");
+var LevelBuilderX_1 = require("./LevelBuilderX");
 var TileType_1 = require("./TileType");
 var Constants_1 = require("./Constants");
 var Grid = /** @class */ (function () {
@@ -165,6 +164,7 @@ var Grid = /** @class */ (function () {
         this.gridModel = new GridModel_1.GridModel(gridWidth, gridHeight);
         this.gridView = new GridView_1.GridView(htmlCanvas, scale, this.gridModel);
         this.pathfinder = new BFSPathfinder_1.BFSPathfinder(this.gridModel);
+        this.levelBuilder = new LevelBuilderX_1.LevelBuilderX(this.gridModel);
         this.currentTileType = TileType_1.TileType.Floor;
         this.setupEvents();
         this.gridView.draw();
@@ -185,7 +185,22 @@ var Grid = /** @class */ (function () {
             this.gridView.draw();
             this.pathfinder.reset();
         }
+        if (!this.levelBuilder.isUnactivated()) {
+            this.levelBuilder.reset();
+        }
         this.pathfinder.run();
+    };
+    Grid.prototype.runLevelBuilder = function () {
+        if (!this.levelBuilder.isUnactivated()) {
+            this.levelBuilder.reset();
+        }
+        if (!this.pathfinder.isUnactivated()) {
+            this.gridModel.resetStates();
+            this.pathfinder.reset();
+        }
+        this.gridModel.resetTiles();
+        this.gridView.draw();
+        this.levelBuilder.run();
     };
     Grid.prototype.setupEvents = function () {
         var _this = this;
@@ -195,11 +210,14 @@ var Grid = /** @class */ (function () {
         this.gridView.ontileclick = function (x, y) {
             _this.handleOnTileClickEvent(x, y);
         };
-        this.pathfinder.onstep = function (x, y) {
-            _this.handleOnStep(x, y);
+        this.pathfinder.onstep = function (x, y, tileState, direction) {
+            _this.handleOnPathfinderStep(x, y, tileState, direction);
         };
-        this.pathfinder.onsolvestep = function (x, y) {
-            _this.handleOnSolveStep(x, y);
+        this.pathfinder.onpathstep = function (x, y, tileState, direction) {
+            _this.handleOnPathfinderPathStep(x, y, tileState, direction);
+        };
+        this.levelBuilder.onstep = function (x, y, tileType) {
+            _this.handleOnLevelBuilderStep(x, y, tileType);
         };
     };
     Grid.prototype.handleOnTileTypeSelectEvent = function (x, y) {
@@ -222,6 +240,9 @@ var Grid = /** @class */ (function () {
             this.gridModel.resetStates();
             this.gridView.draw();
             this.pathfinder.reset();
+        }
+        if (!this.levelBuilder.isUnactivated()) {
+            this.levelBuilder.reset();
         }
     };
     Grid.prototype.handleOnTileClickEvent = function (x, y) {
@@ -256,18 +277,31 @@ var Grid = /** @class */ (function () {
             this.gridView.draw();
             this.pathfinder.reset();
         }
+        if (!this.levelBuilder.isUnactivated()) {
+            this.levelBuilder.reset();
+        }
     };
-    Grid.prototype.handleOnStep = function (x, y) {
+    Grid.prototype.handleOnPathfinderStep = function (x, y, tileState, direction) {
+        this.gridModel.setStateAt(x, y, tileState);
+        if (direction != null)
+            this.gridModel.setDirectionAt(x, y, direction);
         this.gridView.drawTile(x, y);
     };
-    Grid.prototype.handleOnSolveStep = function (x, y) {
+    Grid.prototype.handleOnPathfinderPathStep = function (x, y, tileState, direction) {
+        this.gridModel.setStateAt(x, y, tileState);
+        if (direction != null)
+            this.gridModel.setDirectionAt(x, y, direction);
+        this.gridView.drawTileAndNeighbours(x, y);
+    };
+    Grid.prototype.handleOnLevelBuilderStep = function (x, y, tileType) {
+        this.gridModel.setTypeAt(x, y, tileType);
         this.gridView.drawTileAndNeighbours(x, y);
     };
     return Grid;
 }());
 exports.Grid = Grid;
 
-},{"./BFSPathfinder":1,"./Constants":2,"./GridModel":5,"./GridView":6,"./TileType":11}],5:[function(require,module,exports){
+},{"./BFSPathfinder":1,"./Constants":2,"./GridModel":5,"./GridView":6,"./LevelBuilderX":8,"./TileType":13}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("./TileType");
@@ -288,11 +322,14 @@ var GridModel = /** @class */ (function () {
             this.states[i] = new Array(this.width);
             this.directions[i] = new Array(this.width);
         }
+        this.resetTiles();
+        this.resetStates();
+        this.resetDirections();
+    };
+    GridModel.prototype.resetTiles = function () {
         for (var i = 0; i < this.height; i++) {
             for (var j = 0; j < this.width; j++) {
                 this.tiles[i][j] = TileType_1.TileType.Floor;
-                this.states[i][j] = TileState_1.TileState.Undiscovered;
-                this.directions[i][j] = Direction_1.Direction.None;
             }
         }
         if (this.width < 5)
@@ -314,6 +351,13 @@ var GridModel = /** @class */ (function () {
         for (var i = 0; i < this.height; i++) {
             for (var j = 0; j < this.width; j++) {
                 this.states[i][j] = TileState_1.TileState.Undiscovered;
+            }
+        }
+    };
+    GridModel.prototype.resetDirections = function () {
+        for (var i = 0; i < this.height; i++) {
+            for (var j = 0; j < this.width; j++) {
+                this.directions[i][j] = Direction_1.Direction.None;
             }
         }
     };
@@ -413,7 +457,7 @@ var GridModel = /** @class */ (function () {
 }());
 exports.GridModel = GridModel;
 
-},{"./Direction":3,"./TileState":10,"./TileType":11}],6:[function(require,module,exports){
+},{"./Direction":3,"./TileState":12,"./TileType":13}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("./TileType");
@@ -785,7 +829,184 @@ var GridView = /** @class */ (function () {
 }());
 exports.GridView = GridView;
 
-},{"./Constants":2,"./Direction":3,"./Pair":7,"./TileState":10,"./TileType":11}],7:[function(require,module,exports){
+},{"./Constants":2,"./Direction":3,"./Pair":9,"./TileState":12,"./TileType":13}],7:[function(require,module,exports){
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var LevelBuilder = /** @class */ (function () {
+    function LevelBuilder(gridModel) {
+        this.gridModel = gridModel;
+        this.running = false;
+        this.runningId = 0;
+        this.stepDelay = 50;
+        this.unactivated = true;
+        this.onstep = null;
+    }
+    LevelBuilder.prototype.reset = function () {
+        this.running = false;
+        this.unactivated = true;
+    };
+    LevelBuilder.prototype.run = function () {
+        if (!this.running) {
+            this.unactivated = false;
+            this.running = true;
+            this.runningId++;
+            this.stepLoop(this.runningId);
+        }
+    };
+    LevelBuilder.prototype.pause = function () {
+        this.running = false;
+    };
+    LevelBuilder.prototype.isUnactivated = function () {
+        return this.unactivated;
+    };
+    LevelBuilder.prototype.stepLoop = function (runningId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.initialization();
+                        _a.label = 1;
+                    case 1:
+                        if (!(this.running && runningId == this.runningId)) return [3 /*break*/, 3];
+                        this.step();
+                        return [4 /*yield*/, this.delay(this.stepDelay)];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 1];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ;
+    LevelBuilder.prototype.delay = function (ms) {
+        return new Promise(function (resolve) { return setTimeout(resolve, ms); });
+    };
+    return LevelBuilder;
+}());
+exports.LevelBuilder = LevelBuilder;
+
+},{}],8:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var TileType_1 = require("./TileType");
+var Direction_1 = require("./Direction");
+var LevelBuilder_1 = require("./LevelBuilder");
+var LevelBuilderX = /** @class */ (function (_super) {
+    __extends(LevelBuilderX, _super);
+    function LevelBuilderX(gridModel) {
+        var _this = _super.call(this, gridModel) || this;
+        _this.reset();
+        return _this;
+    }
+    LevelBuilderX.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+    };
+    LevelBuilderX.prototype.initialization = function () {
+        this.direction = Direction_1.Direction.Right;
+        this.x = 0;
+        this.y = 0;
+    };
+    LevelBuilderX.prototype.step = function () {
+        if (this.direction == Direction_1.Direction.Right) {
+            if (this.onstep)
+                this.onstep(this.x, this.y, TileType_1.TileType.Wall);
+            if (this.x + 1 >= this.gridModel.getWidth()) {
+                this.direction = Direction_1.Direction.Down;
+                this.y++;
+            }
+            else {
+                this.x++;
+            }
+        }
+        else if (this.direction == Direction_1.Direction.Down) {
+            if (this.onstep)
+                this.onstep(this.x, this.y, TileType_1.TileType.Wall);
+            if (this.y + 1 >= this.gridModel.getHeight()) {
+                this.direction = Direction_1.Direction.Left;
+                this.x--;
+            }
+            else {
+                this.y++;
+            }
+        }
+        else if (this.direction == Direction_1.Direction.Left) {
+            if (this.onstep)
+                this.onstep(this.x, this.y, TileType_1.TileType.Wall);
+            if (this.x - 1 < 0) {
+                this.direction = Direction_1.Direction.Up;
+                this.y--;
+            }
+            else {
+                this.x--;
+            }
+        }
+        else if (this.direction == Direction_1.Direction.Up) {
+            if (this.onstep)
+                this.onstep(this.x, this.y, TileType_1.TileType.Wall);
+            if (this.x - 1 >= 0) {
+                this.running = false;
+                return;
+            }
+            else {
+                this.y--;
+            }
+        }
+    };
+    return LevelBuilderX;
+}(LevelBuilder_1.LevelBuilder));
+exports.LevelBuilderX = LevelBuilderX;
+
+},{"./Direction":3,"./LevelBuilder":7,"./TileType":13}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair = /** @class */ (function () {
@@ -797,7 +1018,7 @@ var Pair = /** @class */ (function () {
 }());
 exports.Pair = Pair;
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -848,12 +1069,11 @@ var Pathfinder = /** @class */ (function () {
         this.stepDelay = 50;
         this.unactivated = true;
         this.onstep = null;
-        this.onsolvestep = null;
+        this.onpathstep = null;
     }
     Pathfinder.prototype.reset = function () {
         this.running = false;
         this.exitFound = false;
-        this.stepDelay = 50;
         this.unactivated = true;
     };
     Pathfinder.prototype.run = function () {
@@ -882,7 +1102,7 @@ var Pathfinder = /** @class */ (function () {
                         if (!this.exitFound)
                             this.step();
                         else
-                            this.stepPath();
+                            this.pathStep();
                         return [4 /*yield*/, this.delay(this.stepDelay)];
                     case 2:
                         _a.sent();
@@ -893,16 +1113,15 @@ var Pathfinder = /** @class */ (function () {
         });
     };
     ;
-    Pathfinder.prototype.stepPath = function () {
-        this.gridModel.setStateAt(this.pathX, this.pathY, TileState_1.TileState.Path);
-        var direction = this.gridModel.getDirectionAt(this.pathX, this.pathY);
-        if (this.onsolvestep != null)
-            this.onsolvestep(this.pathX, this.pathY);
-        var d = Direction_1.getDirectionValue(direction);
+    Pathfinder.prototype.pathStep = function () {
+        if (this.onpathstep != null)
+            this.onpathstep(this.pathX, this.pathY, TileState_1.TileState.Path, null);
         if (this.gridModel.getTypeAt(this.pathX, this.pathY) == TileType_1.TileType.Entry) {
             this.running = false;
             return;
         }
+        var direction = this.gridModel.getDirectionAt(this.pathX, this.pathY);
+        var d = Direction_1.getDirectionValue(direction);
         this.pathX += d.x;
         this.pathY += d.y;
     };
@@ -913,7 +1132,7 @@ var Pathfinder = /** @class */ (function () {
 }());
 exports.Pathfinder = Pathfinder;
 
-},{"./Direction":3,"./TileState":10,"./TileType":11}],9:[function(require,module,exports){
+},{"./Direction":3,"./TileState":12,"./TileType":13}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Queue = /** @class */ (function () {
@@ -942,7 +1161,7 @@ var Queue = /** @class */ (function () {
 }());
 exports.Queue = Queue;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileState;
@@ -953,7 +1172,7 @@ var TileState;
     TileState[TileState["Path"] = 3] = "Path";
 })(TileState = exports.TileState || (exports.TileState = {}));
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType;
@@ -964,14 +1183,15 @@ var TileType;
     TileType[TileType["Exit"] = 3] = "Exit";
 })(TileType = exports.TileType || (exports.TileType = {}));
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./Grid");
 var grid;
 var htmlGrid;
-var resetButton;
 var findButton;
+var generateButton;
+var resetButton;
 var resizeMessage;
 window.onload = function () {
     setupHtmlElements();
@@ -1009,6 +1229,10 @@ function runPathfinder() {
     if (grid != null)
         grid.runPathfinder();
 }
+function runLevelBuilder() {
+    if (grid != null)
+        grid.runLevelBuilder();
+}
 function openResizeMessage() {
     if (resizeMessage != null) {
         resizeMessage.style.display = 'block';
@@ -1023,8 +1247,9 @@ function closeResizeMessage(reset) {
 }
 function setupHtmlElements() {
     htmlGrid = document.getElementById('grid');
-    resetButton = document.getElementById('reset-button');
     findButton = document.getElementById('find-button');
+    generateButton = document.getElementById('generate-button');
+    resetButton = document.getElementById('reset-button');
     resizeMessage = document.getElementById('resize-message');
     var resizeMessageYes = document.getElementById('resize-message-yes');
     var resizeMessageNo = document.getElementById('resize-message-no');
@@ -1033,6 +1258,9 @@ function setupHtmlElements() {
     }
     if (findButton instanceof HTMLAnchorElement) {
         findButton.onclick = function () { return runPathfinder(); };
+    }
+    if (generateButton instanceof HTMLAnchorElement) {
+        generateButton.onclick = function () { return runLevelBuilder(); };
     }
     if (resizeMessageYes instanceof HTMLAnchorElement) {
         resizeMessageYes.onclick = function () { return closeResizeMessage(true); };
@@ -1080,4 +1308,4 @@ function setupTouchEvents() {
     }
 }
 
-},{"./Grid":4}]},{},[12]);
+},{"./Grid":4}]},{},[14]);

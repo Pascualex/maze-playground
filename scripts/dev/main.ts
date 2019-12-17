@@ -2,8 +2,9 @@ import { Grid } from './Grid';
 
 let grid: Grid | null;
 let htmlGrid: HTMLElement | null;
-let resetButton : HTMLElement | null;
 let findButton : HTMLElement | null;
+let generateButton : HTMLElement | null;
+let resetButton : HTMLElement | null;
 let resizeMessage : HTMLElement | null;
 
 window.onload = () => {
@@ -42,6 +43,10 @@ function runPathfinder(): void {
   if (grid != null) grid.runPathfinder();
 }
 
+function runLevelBuilder(): void {
+  if (grid != null) grid.runLevelBuilder();
+}
+
 function openResizeMessage(): void {
   if (resizeMessage != null) {
     resizeMessage.style.display = 'block';
@@ -57,8 +62,9 @@ function closeResizeMessage(reset: boolean): void {
 
 function setupHtmlElements(): void {
   htmlGrid = document.getElementById('grid');
-  resetButton = document.getElementById('reset-button');
   findButton = document.getElementById('find-button');
+  generateButton = document.getElementById('generate-button');
+  resetButton = document.getElementById('reset-button');
   resizeMessage = document.getElementById('resize-message');
   const resizeMessageYes = document.getElementById('resize-message-yes');
   const resizeMessageNo = document.getElementById('resize-message-no');  
@@ -69,6 +75,10 @@ function setupHtmlElements(): void {
 
   if (findButton instanceof HTMLAnchorElement) {
     findButton.onclick = () => runPathfinder();
+  }
+
+  if (generateButton instanceof HTMLAnchorElement) {
+    generateButton.onclick = () => runLevelBuilder();
   }
 
   if (resizeMessageYes instanceof HTMLAnchorElement) {
