@@ -130,11 +130,17 @@ export class GridModel {
 
     const currentTileType: TileType = this.getTypeAt(x, y)!;
     
-    if (currentTileType == TileType.Entry) this.entryPreviousTile = tileType;
-    else if (currentTileType == TileType.Exit) this.exitPreviousTile = tileType;
-    else if (tileType == TileType.Entry) this.setEntryTileAt(x, y);
-    else if (tileType == TileType.Exit) this.setExitTileAt(x, y);
-    else this.tiles[y][x] = tileType;
+    if (currentTileType == TileType.Entry) {
+      if (tileType != TileType.Exit) this.entryPreviousTile = tileType;
+    } else if (currentTileType == TileType.Exit) {
+      if (tileType != TileType.Entry) this.exitPreviousTile = tileType;
+    } else if (tileType == TileType.Entry) {
+      this.setEntryTileAt(x, y);
+    } else if (tileType == TileType.Exit) {
+      this.setExitTileAt(x, y);
+    } else {
+      this.tiles[y][x] = tileType;
+    }
   }
 
   public setStateAt(x: number, y: number, tileState: TileState): void {

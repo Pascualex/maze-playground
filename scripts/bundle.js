@@ -406,16 +406,23 @@ var GridModel = /** @class */ (function () {
         if (y < 0 || y >= this.height)
             return;
         var currentTileType = this.getTypeAt(x, y);
-        if (currentTileType == TileType_1.TileType.Entry)
-            this.entryPreviousTile = tileType;
-        else if (currentTileType == TileType_1.TileType.Exit)
-            this.exitPreviousTile = tileType;
-        else if (tileType == TileType_1.TileType.Entry)
+        if (currentTileType == TileType_1.TileType.Entry) {
+            if (tileType != TileType_1.TileType.Exit)
+                this.entryPreviousTile = tileType;
+        }
+        else if (currentTileType == TileType_1.TileType.Exit) {
+            if (tileType != TileType_1.TileType.Entry)
+                this.exitPreviousTile = tileType;
+        }
+        else if (tileType == TileType_1.TileType.Entry) {
             this.setEntryTileAt(x, y);
-        else if (tileType == TileType_1.TileType.Exit)
+        }
+        else if (tileType == TileType_1.TileType.Exit) {
             this.setExitTileAt(x, y);
-        else
+        }
+        else {
             this.tiles[y][x] = tileType;
+        }
     };
     GridModel.prototype.setStateAt = function (x, y, tileState) {
         if (x < 0 || x >= this.width)
