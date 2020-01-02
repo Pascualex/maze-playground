@@ -1,11 +1,11 @@
-import { GridModel } from './GridModel';
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Direction, getDirectionValue } from './Direction';
-import { Pair } from './Pair';
+import { GridModel } from '../grid/GridModel';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Direction, getDirectionValue } from '../utils/Direction';
+import { Pair } from '../utils/Pair';
 
 export abstract class Pathfinder {
-  protected gridModel: GridModel;
+  protected gridModel: GridModel | null;
   protected running: boolean;
   protected exitFound: boolean;
   protected pathX!: number;
@@ -16,8 +16,8 @@ export abstract class Pathfinder {
   public onstep: ((x: number, y: number, tileState: TileState, direction: Direction | null) => any) | null;
   public onpathstep: ((x: number, y: number, tileState: TileState, direction: Direction | null) => any) | null;
 
-  constructor(gridModel: GridModel) {
-    this.gridModel = gridModel;
+  constructor() {
+    this.gridModel = null;
     this.running = false;
     this.exitFound = false;
     this.runningId = 0;
@@ -25,6 +25,10 @@ export abstract class Pathfinder {
     this.unactivated = true;
     this.onstep = null;
     this.onpathstep = null;
+  }
+
+  public setGridModel(gridModel: GridModel): void {
+    this.gridModel = gridModel;
   }
 
   public reset(): void {
@@ -63,6 +67,11 @@ export abstract class Pathfinder {
   protected abstract step(): void;
 
   private pathStep(): void {
+    if (this.gridModel == null) {
+      this.running = false;
+      return;
+    }
+
     if (this.onpathstep != null) this.onpathstep(this.pathX, this.pathY, TileState.Path, null);
 
     if (this.gridModel.getTypeAt(this.pathX, this.pathY) == TileType.Entry) {

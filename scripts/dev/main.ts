@@ -1,14 +1,26 @@
-import { Grid } from './Grid';
+import { Grid } from './grid/Grid';
+import { ControlBar } from './controlbar/ControlBar';
+import { Pathfinder } from './pathfinder/Pathfinder';
+import { BFSPathfinder } from './pathfinder/BFSPathfinder';
+import { DFSPathfinder } from './pathfinder/DFSPathfinder';
+import { Builder } from './builder/Builder';
+import { BuilderX } from './builder/BuilderX';
 
 let grid: Grid | null;
+let controlBar: ControlBar | null;
 let htmlGrid: HTMLElement | null;
-let findButton : HTMLElement | null;
+let header: HTMLElement | null;
+let builderSelect : HTMLElement | null;
 let generateButton : HTMLElement | null;
+let pathfinderSelect : HTMLElement | null;
+let findButton : HTMLElement | null;
 let resetButton : HTMLElement | null;
 let resizeMessage : HTMLElement | null;
 
 window.onload = () => {
   setupHtmlElements();
+  createControlBar();
+  setupControlBarEvents();
   setupTouchEvents();
   createGrid();
 }
@@ -18,33 +30,74 @@ window.onresize = () => {
 }
 
 function createGrid(): void {    
-  if (htmlGrid instanceof HTMLCanvasElement) {
+  if (htmlGrid instanceof HTMLCanvasElement && header != null) {
     let scale: number = 1;
     htmlGrid.width = window.innerWidth;
-    htmlGrid.height = window.innerHeight;
+    htmlGrid.height = window.innerHeight - header.clientHeight;
     if ((window.innerWidth / window.devicePixelRatio) <= 600) scale = 2;
     grid = new Grid(htmlGrid, scale);
+    if (controlBar != null) {
+      const defaultPathfinder: Pathfinder | null = controlBar.getDefaultPathfinder();
+      const defaultBuilder: Builder | null = controlBar.getDefaultBuilder();
+      if (defaultPathfinder != null) grid.setPathfinder(defaultPathfinder);
+      if (defaultBuilder != null) grid.setBuilder(defaultBuilder);
+    }
   } else {
     grid = null;
   }
 }
 
 function resetGrid(): void {
-  if (htmlGrid instanceof HTMLCanvasElement) {
+  if (htmlGrid instanceof HTMLCanvasElement && header != null) {
     let scale: number = 1;
     htmlGrid.width = window.innerWidth;
-    htmlGrid.height = window.innerHeight;
+    htmlGrid.height = window.innerHeight - header.clientHeight;
     if ((window.innerWidth / window.devicePixelRatio) <= 600) scale = 2;
     if (grid != null) grid.reset(scale);
   }
 }
 
-function runPathfinder(): void {
+function createControlBar(): void {
+  controlBar = null;
+
+  if (!(builderSelect instanceof HTMLSelectElement)) return;
+  if (!(generateButton instanceof HTMLAnchorElement)) return;
+  if (!(pathfinderSelect instanceof HTMLSelectElement)) return;
+  if (!(findButton instanceof HTMLAnchorElement)) return;
+  if (!(resetButton instanceof HTMLAnchorElement)) return;
+
+  controlBar = new ControlBar(
+    builderSelect,
+    generateButton,
+    pathfinderSelect,
+    findButton,
+    resetButton
+  );
+
+  controlBar.addBuilder("Builder X", new BuilderX());
+
+  controlBar.addPathfinder("BFS", new BFSPathfinder());
+  controlBar.addPathfinder("DFS", new DFSPathfinder());
+}
+
+function handleOnBuilderChangeEvent(builder: Builder): void {
+  if (grid != null) grid.setBuilder(builder);
+}
+
+function handleOnGenerateEvent(): void {
+  if (grid != null) grid.runBuilder();
+}
+
+function handleOnPathfinderChangeEvent(pathfinder: Pathfinder): void {
+  if (grid != null) grid.setPathfinder(pathfinder);
+}
+
+function handleOnFindEvent(): void {
   if (grid != null) grid.runPathfinder();
 }
 
-function runLevelBuilder(): void {
-  if (grid != null) grid.runLevelBuilder();
+function handleOnResetEvent(): void {
+  resetGrid();
 }
 
 function openResizeMessage(): void {
@@ -62,24 +115,15 @@ function closeResizeMessage(reset: boolean): void {
 
 function setupHtmlElements(): void {
   htmlGrid = document.getElementById('grid');
-  findButton = document.getElementById('find-button');
+  header = document.getElementById('header');
+  builderSelect = document.getElementById('builder-select');
   generateButton = document.getElementById('generate-button');
+  pathfinderSelect = document.getElementById('pathfinder-select');
+  findButton = document.getElementById('find-button');
   resetButton = document.getElementById('reset-button');
   resizeMessage = document.getElementById('resize-message');
   const resizeMessageYes = document.getElementById('resize-message-yes');
-  const resizeMessageNo = document.getElementById('resize-message-no');  
-
-  if (resetButton instanceof HTMLAnchorElement) {
-    resetButton.onclick = () => resetGrid();
-  }
-
-  if (findButton instanceof HTMLAnchorElement) {
-    findButton.onclick = () => runPathfinder();
-  }
-
-  if (generateButton instanceof HTMLAnchorElement) {
-    generateButton.onclick = () => runLevelBuilder();
-  }
+  const resizeMessageNo = document.getElementById('resize-message-no');
 
   if (resizeMessageYes instanceof HTMLAnchorElement) {
     resizeMessageYes.onclick = () => closeResizeMessage(true);
@@ -88,6 +132,26 @@ function setupHtmlElements(): void {
   if (resizeMessageNo instanceof HTMLAnchorElement) {
     resizeMessageNo.onclick = () => closeResizeMessage(false);
   }
+}
+
+function setupControlBarEvents(): void {
+  if (controlBar == null) return;
+
+  controlBar.onbuilderchange = (builder: Builder) => {
+    handleOnBuilderChangeEvent(builder);
+  };
+  controlBar.ongenerate = () => {
+    handleOnGenerateEvent();
+  };
+  controlBar.onpathfinderchange = (pathfinder: Pathfinder) => {
+    handleOnPathfinderChangeEvent(pathfinder);
+  };
+  controlBar.onfind = () => {
+    handleOnFindEvent();
+  };
+  controlBar.onreset = () => {
+    handleOnResetEvent();
+  };
 }
 
 function setupTouchEvents(): void {

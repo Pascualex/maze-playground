@@ -1,21 +1,21 @@
 import { GridModel } from './GridModel';
 import { GridView } from './GridView';
-import { Pathfinder } from './Pathfinder';
-import { BFSPathfinder } from './BFSPathfinder';
-import { DFSPathfinder } from './DFSPathfinder';
-import { LevelBuilder } from './LevelBuilder';
-import { LevelBuilderX } from './LevelBuilderX';
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Direction } from './Direction';
-import { Constants } from './Constants'
+import { Pathfinder } from '../pathfinder/Pathfinder';
+import { BFSPathfinder } from '../pathfinder/BFSPathfinder';
+import { DFSPathfinder } from '../pathfinder/DFSPathfinder';
+import { Builder } from '../builder/Builder';
+import { BuilderX } from '../builder/BuilderX';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Direction } from '../utils/Direction';
+import { Constants } from '../utils/Constants'
 
 export class Grid {
   private htmlCanvas: HTMLCanvasElement;
   private gridModel: GridModel;
   private gridView: GridView;
-  private pathfinder: Pathfinder;
-  private levelBuilder: LevelBuilder;
+  private pathfinder: Pathfinder | null;
+  private builder: Builder | null;
   private currentTileType: TileType;
 
   constructor(htmlCanvas: HTMLCanvasElement, scale: number) {
@@ -27,8 +27,8 @@ export class Grid {
 
     this.gridModel = new GridModel(gridWidth, gridHeight);
     this.gridView = new GridView(htmlCanvas, scale, this.gridModel);
-    this.pathfinder = new BFSPathfinder(this.gridModel);
-    this.levelBuilder = new LevelBuilderX(this.gridModel);
+    this.pathfinder = null;
+    this.builder = null;
 
     this.currentTileType = TileType.Floor;
 
@@ -44,36 +44,72 @@ export class Grid {
 
     this.gridModel.reset(gridWidth, gridHeight);
     this.gridView.reset(scale);
-    this.pathfinder.reset();
+    if (this.pathfinder != null) this.pathfinder.reset();
 
     this.currentTileType = TileType.Floor;
 
     this.gridView.draw();
   }
 
+  public setPathfinder(pathfinder: Pathfinder): void {
+    if (pathfinder == this.pathfinder) return;
+
+    if (this.pathfinder != null) {
+      this.unsetPathfinderEvents();
+
+      if (!this.pathfinder.isUnactivated()) {
+        this.gridModel.resetStates();
+        this.gridView.draw();
+        this.pathfinder.reset();
+      }
+    }
+
+    this.pathfinder = pathfinder;
+    this.pathfinder.setGridModel(this.gridModel);
+    this.setupPathfinderEvents();
+  }
+
   public runPathfinder(): void {
+    if (this.pathfinder == null) return;
+
     if (!this.pathfinder.isUnactivated()) {
       this.gridModel.resetStates();
       this.gridView.draw();
       this.pathfinder.reset();
     }
-    if (!this.levelBuilder.isUnactivated()) {
-      this.levelBuilder.reset();
+
+    if (this.builder != null && !this.builder.isUnactivated()) {
+      this.builder.reset();
     }
+
     this.pathfinder.run();
   }
 
-  public runLevelBuilder(): void {
-    if (!this.levelBuilder.isUnactivated()) {
-      this.levelBuilder.reset();
+  public setBuilder(builder: Builder): void {
+    if (this.builder != null) {
+      this.unsetBuilderEvents();
     }
-    if (!this.pathfinder.isUnactivated()) {
+
+    this.builder = builder;
+    this.builder.setGridModel(this.gridModel);
+    this.setupBuilderEvents();
+  }
+
+  public runBuilder(): void {
+    if (this.builder == null) return;
+
+    if (!this.builder.isUnactivated()) {
+      this.builder.reset();
+    }
+
+    if (this.pathfinder != null && !this.pathfinder.isUnactivated()) {
       this.gridModel.resetStates();
       this.pathfinder.reset();
     }
+
     this.gridModel.resetTiles();
     this.gridView.draw();
-    this.levelBuilder.run();
+    this.builder.run();
   }
 
   private setupEvents(): void {
@@ -83,15 +119,38 @@ export class Grid {
     this.gridView.ontileclick = (x: number, y: number) => {
       this.handleOnTileClickEvent(x, y);
     };
+  }
+
+  private setupPathfinderEvents(): void {
+    if (this.pathfinder == null) return;
+    
     this.pathfinder.onstep = (x: number, y: number,  tileState: TileState, direction: Direction | null) => {
       this.handleOnPathfinderStep(x, y, tileState, direction);
     };
     this.pathfinder.onpathstep = (x: number, y: number,  tileState: TileState, direction: Direction | null) => {
       this.handleOnPathfinderPathStep(x, y, tileState, direction);
     };
-    this.levelBuilder.onstep = (x: number, y: number, tileType: TileType) => {
-      this.handleOnLevelBuilderStep(x, y, tileType);
+  }
+
+  private unsetPathfinderEvents(): void {
+    if (this.pathfinder == null) return;
+    
+    this.pathfinder.onstep = null;
+    this.pathfinder.onpathstep = null;
+  }
+
+  private setupBuilderEvents(): void {
+    if (this.builder == null) return;
+
+    this.builder.onstep = (x: number, y: number, tileType: TileType) => {
+      this.handleOnBuilderStep(x, y, tileType);
     }
+  }
+
+  private unsetBuilderEvents(): void {
+    if (this.builder == null) return;
+    
+    this.builder.onstep = null;
   }
 
   private handleOnTileTypeSelectEvent(x: number, y: number): void {
@@ -108,14 +167,14 @@ export class Grid {
       }
     }
 
-    if (!this.pathfinder.isUnactivated()) {
+    if (this.pathfinder != null && !this.pathfinder.isUnactivated()) {
       this.gridModel.resetStates();
       this.gridView.draw();
       this.pathfinder.reset();
     }
 
-    if (!this.levelBuilder.isUnactivated()) {
-      this.levelBuilder.reset();
+    if (this.builder != null && !this.builder.isUnactivated()) {
+      this.builder.reset();
     }
   }
 
@@ -144,14 +203,14 @@ export class Grid {
       this.gridView.drawTileAndNeighbours(x, y);
     }
 
-    if (!this.pathfinder.isUnactivated()) {
+    if (this.pathfinder != null && !this.pathfinder.isUnactivated()) {
       this.gridModel.resetStates();
       this.gridView.draw();
       this.pathfinder.reset();
     }
 
-    if (!this.levelBuilder.isUnactivated()) {
-      this.levelBuilder.reset();
+    if (this.builder != null && !this.builder.isUnactivated()) {
+      this.builder.reset();
     }
   }
 
@@ -167,7 +226,7 @@ export class Grid {
     this.gridView.drawTileAndNeighbours(x, y);
   }
 
-  private handleOnLevelBuilderStep(x: number, y: number, tileType: TileType): void {
+  private handleOnBuilderStep(x: number, y: number, tileType: TileType): void {
     this.gridModel.setTypeAt(x, y, tileType);
     this.gridView.drawTileAndNeighbours(x, y);
   }

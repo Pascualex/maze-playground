@@ -1,19 +1,19 @@
-import { Pathfinder } from './Pathfinder';
-import { GridModel } from './GridModel';
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Queue } from './Queue';
-import { Pair } from './Pair';
-import { Direction, getAllDirections, getDirectionValue, invertDirection } from './Direction';
-import { LevelBuilder } from './LevelBuilder';
+import { Pathfinder } from '../pathfinder/Pathfinder';
+import { GridModel } from '../grid/GridModel';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Queue } from '../utils/Queue';
+import { Pair } from '../utils/Pair';
+import { Direction, getAllDirections, getDirectionValue, invertDirection } from '../utils/Direction';
+import { Builder } from './Builder';
 
-export class LevelBuilderX extends LevelBuilder {
+export class BuilderX extends Builder {
   private direction!: Direction;
   private x!: number;
   private y!: number;
 
-  constructor(gridModel: GridModel) {
-    super(gridModel);
+  constructor() {
+    super();
     this.reset();
   }
 
@@ -28,6 +28,11 @@ export class LevelBuilderX extends LevelBuilder {
   }
 
   protected step(): void {
+    if (this.gridModel == null) {
+      this.running = false;
+      return;
+    }
+
     if (this.direction == Direction.Right) {
       if (this.onstep) this.onstep(this.x, this.y, TileType.Wall);
       if (this.x + 1 >= this.gridModel.getWidth()) {

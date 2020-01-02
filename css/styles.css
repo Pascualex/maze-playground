@@ -27,6 +27,49 @@ a {
   cursor: pointer;
 }
 
+#header {
+  padding: 10px;
+  text-align: center;
+}
+
+#control-bar {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 3px 2px rgba(0, 0, 0, 0.25);
+}
+
+#control-bar a {
+  margin: 0 5px;
+  padding: 8px 0 10px 0;
+  border-radius: 5px;
+  user-select: none;  
+}
+
+#control-bar select {
+  margin: 0 5px;
+}
+
+#generate-button {
+  color: #30b348;
+}
+
+#find-button {
+  color: #30b348;
+}
+
+#reset-button {
+  color: #f71b39;
+}
+
+.separator {
+  width: 1px;
+  height: 30px;
+  margin: 0 10px;
+  background-color: #6da6b3;
+}
+
 #wrapper {
   position: relative;
 }
@@ -34,37 +77,6 @@ a {
 #grid {
   touch-action: none;
 }
-
-#reset-button {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-  padding: 2px 10px 5px 10px;
-  border-radius: 5px;
-  background-color: #30b348;
-  user-select: none;
-}
-
-#generate-button {
-  position: absolute;
-  top: 5px;
-  right: 80px;
-  padding: 2px 10px 5px 10px;
-  border-radius: 5px;
-  background-color: #30b348;
-  user-select: none;
-}
-
-#find-button {
-  position: absolute;
-  top: 5px;
-  right: 176px;
-  padding: 2px 10px 5px 10px;
-  border-radius: 5px;
-  background-color: #30b348;
-  user-select: none;
-}
-
 
 #resize-message {
   display: none;

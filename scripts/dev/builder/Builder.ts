@@ -1,21 +1,25 @@
-import { GridModel } from './GridModel';
-import { TileType } from './TileType';
+import { GridModel } from '../grid/GridModel';
+import { TileType } from '../utils/TileType';
 
-export abstract class LevelBuilder {
-  protected gridModel: GridModel;
+export abstract class Builder {
+  protected gridModel: GridModel | null;
   protected running: boolean;
   private runningId: number;
   private stepDelay: number;
   private unactivated: boolean;
   public onstep: ((x: number, y: number, tileType: TileType) => any) | null;
 
-  constructor(gridModel: GridModel) {
-    this.gridModel = gridModel;
+  constructor() {
+    this.gridModel = null;
     this.running = false;
     this.runningId = 0;
     this.stepDelay = 50;
     this.unactivated = true;
     this.onstep = null;
+  }
+
+  public setGridModel(gridModel: GridModel): void {
+    this.gridModel = gridModel;
   }
 
   public reset(): void {

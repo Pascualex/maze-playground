@@ -1,3 +1,3 @@
 export enum Constants {
-    TileSize = 32
+  TileSize = 32
 }

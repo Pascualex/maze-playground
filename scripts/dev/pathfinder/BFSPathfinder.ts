@@ -1,16 +1,16 @@
 import { Pathfinder } from './Pathfinder';
-import { GridModel } from './GridModel';
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Queue } from './Queue';
-import { Pair } from './Pair';
-import { Direction, getAllDirections, getDirectionValue, invertDirection } from './Direction';
+import { GridModel } from '../grid/GridModel';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Queue } from '../utils/Queue';
+import { Pair } from '../utils/Pair';
+import { Direction, getAllDirections, getDirectionValue, invertDirection } from '../utils/Direction';
 
 export class BFSPathfinder extends Pathfinder {
   private discoveredTiles: Queue<Pair>;
 
-  constructor(gridModel: GridModel) {
-    super(gridModel);
+  constructor() {
+    super();
     this.discoveredTiles = new Queue<Pair>();
     this.reset();
   }
@@ -21,13 +21,14 @@ export class BFSPathfinder extends Pathfinder {
   }
 
   protected initialization(): void {    
+    if (this.gridModel == null) return;
     const x: number = this.gridModel.getEntryTileX();
     const y: number = this.gridModel.getEntryTileY();
     this.discoveredTiles.enqueue(new Pair(x, y));
   }
 
   protected step(): void {
-    if (this.discoveredTiles.isEmpty()) {
+    if (this.gridModel == null || this.discoveredTiles.isEmpty()) {
       this.running = false;
       return;
     }

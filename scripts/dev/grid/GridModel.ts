@@ -1,6 +1,6 @@
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Direction } from './Direction';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Direction } from '../utils/Direction';
 
 export class GridModel {
   private width!: number;

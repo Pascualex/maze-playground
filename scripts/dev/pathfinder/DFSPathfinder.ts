@@ -1,16 +1,16 @@
 import { Pathfinder } from './Pathfinder';
-import { GridModel } from './GridModel';
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Stack } from './Stack';
-import { Pair } from './Pair';
-import { Direction, getDirectionValue, invertDirection, getRandomizedDirections } from './Direction';
+import { GridModel } from '../grid/GridModel';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Stack } from '../utils/Stack';
+import { Pair } from '../utils/Pair';
+import { Direction, getDirectionValue, invertDirection, getRandomizedDirections } from '../utils/Direction';
 
 export class DFSPathfinder extends Pathfinder {
   private discoveredTiles: Stack<Pair>;
 
-  constructor(gridModel: GridModel) {
-    super(gridModel);
+  constructor() {
+    super();
     this.discoveredTiles = new Stack<Pair>();
     this.reset();
   }
@@ -21,13 +21,14 @@ export class DFSPathfinder extends Pathfinder {
   }
 
   protected initialization(): void {    
+    if (this.gridModel == null) return;
     const x: number = this.gridModel.getEntryTileX();
     const y: number = this.gridModel.getEntryTileY();
     this.discoveredTiles.push(new Pair(x, y));
   }
 
   protected step(): void {
-    if (this.discoveredTiles.isEmpty()) {
+    if (this.gridModel == null || this.discoveredTiles.isEmpty()) {
       this.running = false;
       return;
     }

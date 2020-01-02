@@ -1,9 +1,9 @@
 import { GridModel } from './GridModel';
-import { TileType } from './TileType';
-import { TileState } from './TileState';
-import { Pair } from './Pair';
-import { Direction, getAllDirections, getDirectionValue } from './Direction';
-import { Constants } from './Constants';
+import { TileType } from '../utils/TileType';
+import { TileState } from '../utils/TileState';
+import { Pair } from '../utils/Pair';
+import { Direction, getAllDirections, getDirectionValue } from '../utils/Direction';
+import { Constants } from '../utils/Constants';
 
 export class GridView {
   private htmlCanvas: HTMLCanvasElement;
@@ -45,7 +45,7 @@ export class GridView {
     this.height = this.htmlCanvas.height;
     const realTileSize: number = (Constants.TileSize * scale) + 1
     this.offsetX = Math.floor(((this.width - 1) % realTileSize) / 2);
-    this.offsetY = Math.floor(((this.height - 1) % realTileSize) / 2);
+    this.offsetY = 0;
     
     this.gridWidth = Math.floor((this.width - 1) / realTileSize);
     this.gridHeight = Math.floor((this.height - 1) / realTileSize);
@@ -110,13 +110,10 @@ export class GridView {
       this.printWallDetail(x, y);
     } else if (tileType == TileType.Floor) {
       this.clearTile(x, y);
-      this.canvas.fillStyle = '#ffffff';
-      this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
       this.printStateDetail(x, y);
     } else if (tileType == TileType.Entry) {
       this.clearTile(x, y);
-      this.canvas.fillStyle = '#ffffff';
-      this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+      this.printStateDetail(x, y);
       this.canvas.beginPath();
       this.canvas.arc(xCenter, yCenter, (14 * s), 0, 2 * Math.PI);
       this.canvas.fillStyle = '#0c264a';
@@ -131,8 +128,7 @@ export class GridView {
       this.canvas.fill();
     } else if (tileType == TileType.Exit) {
       this.clearTile(x, y);
-      this.canvas.fillStyle = '#ffffff';
-      this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
+      this.printStateDetail(x, y);
       this.canvas.beginPath();
       this.canvas.arc(xCenter, yCenter, (14 * s), 0, 2 * Math.PI);
       this.canvas.fillStyle = '#0c264a';
@@ -178,6 +174,8 @@ export class GridView {
 
     this.canvas.fillStyle = '#6da6b3';
     this.canvas.fillRect(xStart, yStart, xSize, ySize);
+    this.canvas.fillStyle = '#ffffff';
+    this.canvas.fillRect(xStart + 1, yStart + 1, xSize - 2, ySize - 2);
   }
 
   private printWallDetail(x: number, y: number) {
