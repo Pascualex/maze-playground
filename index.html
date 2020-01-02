@@ -6,21 +6,20 @@
     <script src="scripts/bundle.js"></script> 
   </head>
   <body>
-    <div id="header">
-      <div id="control-bar">
-        <select id="builder-select">
-        </select> 
-        <a id="generate-button">Generate</a>
-        <div class="separator"></div>
-        <select id="pathfinder-select">          
-        </select> 
-        <a id="find-button">Find</a>
-        <div class="separator"></div>
-        <a id="reset-button" class="red">Reset</a>
-      </div>
-    </div>
     <div id="wrapper">
-      <canvas id="grid"></canvas>
+      <div id="header">
+        <div id="control-bar">
+          <select id="builder-select">
+          </select> 
+          <a id="generate-button">Generate</a>
+          <div class="separator"></div>
+          <select id="pathfinder-select">          
+          </select> 
+          <a id="find-button">Find</a>
+          <div class="separator"></div>
+          <a id="reset-button" class="red">Reset</a>
+        </div>
+      </div>
       <div id="resize-message">
         <p>Window size changed</p>
         <p>Resize and reset grid?</p>
@@ -29,6 +28,7 @@
           <a id="resize-message-no">No</a>
         </div>
       </div>
+      <canvas id="grid"></canvas>
     </div>
   </body>
 </html>

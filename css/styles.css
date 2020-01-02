@@ -83,8 +83,8 @@ a {
   position: absolute;
   width: 250px;
   max-width: 90%;
-  top: 30%;
-  left: 50%;
+  top: 40vh;
+  left: 50vw;
   transform: translate(-50%, -50%);
   padding: 30px;
   background-color: white;
