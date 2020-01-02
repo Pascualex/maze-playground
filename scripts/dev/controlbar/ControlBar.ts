@@ -118,7 +118,6 @@ export class ControlBar {
   }
 
   private triggerOnPathfinderChangeEvent(): void {
-    console.log("Pathfinder change");
     if (this.onpathfinderchange == null) return;
     const index: number = parseInt(this.pathfinderSelect.value);
     const pathfinder: Pathfinder | null = this.pathfinders.get(index);

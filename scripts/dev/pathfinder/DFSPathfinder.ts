@@ -51,7 +51,7 @@ export class DFSPathfinder extends Pathfinder {
         if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType.Floor) {  
           const invertedDirection: Direction = invertDirection(direction);
           this.discoveredTiles.push(new Pair(current.x + d.x, current.y + d.y));
-          if (this.onstep != null) this.onstep(current.x + d.x, current.y + d.y, TileState.Visited, invertedDirection);
+          if (this.onstep != null) this.onstep(current.x + d.x, current.y + d.y, TileState.Discovered, invertedDirection);
         }
       }
     }

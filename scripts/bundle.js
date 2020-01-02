@@ -269,7 +269,6 @@ var ControlBar = /** @class */ (function () {
         this.ongenerate();
     };
     ControlBar.prototype.triggerOnPathfinderChangeEvent = function () {
-        console.log("Pathfinder change");
         if (this.onpathfinderchange == null)
             return;
         var index = parseInt(this.pathfinderSelect.value);
@@ -1353,7 +1352,7 @@ var DFSPathfinder = /** @class */ (function (_super) {
                     var invertedDirection = Direction_1.invertDirection(direction);
                     this.discoveredTiles.push(new Pair_1.Pair(current.x + d.x, current.y + d.y));
                     if (this.onstep != null)
-                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Visited, invertedDirection);
+                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
                 }
             }
         }
