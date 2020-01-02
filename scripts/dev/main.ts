@@ -34,7 +34,7 @@ function createGrid(): void {
     let scale: number = 1;
     htmlGrid.width = window.innerWidth;
     htmlGrid.height = window.innerHeight - header.clientHeight;
-    if ((window.innerWidth / window.devicePixelRatio) <= 600) scale = 2;
+    if (window.devicePixelRatio >= 2) scale = 2;
     grid = new Grid(htmlGrid, scale);
     if (controlBar != null) {
       const defaultPathfinder: Pathfinder | null = controlBar.getDefaultPathfinder();

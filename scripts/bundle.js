@@ -1058,7 +1058,7 @@ function createGrid() {
         var scale = 1;
         htmlGrid.width = window.innerWidth;
         htmlGrid.height = window.innerHeight - header.clientHeight;
-        if ((window.innerWidth / window.devicePixelRatio) <= 600)
+        if (window.devicePixelRatio >= 2)
             scale = 2;
         grid = new Grid_1.Grid(htmlGrid, scale);
         if (controlBar != null) {
