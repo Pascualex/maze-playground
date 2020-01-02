@@ -44,13 +44,13 @@ export class ControlBar {
   }
 
   private setupEvents(): void {
-    this.builderSelect.onclick = () => {
+    this.builderSelect.onchange = () => {
       this.handleOnBuilderChangeEvent();
     };
     this.generateButton.onclick = () => {
       this.handleOnGenerateButtonClickEvent();
     };
-    this.pathfinderSelect.onclick = () => {
+    this.pathfinderSelect.onchange = () => {
       this.handleOnPathfinderChangeEvent();
     };
     this.findButton.onclick = () => {

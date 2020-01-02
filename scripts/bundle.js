@@ -204,13 +204,13 @@ var ControlBar = /** @class */ (function () {
     }
     ControlBar.prototype.setupEvents = function () {
         var _this = this;
-        this.builderSelect.onclick = function () {
+        this.builderSelect.onchange = function () {
             _this.handleOnBuilderChangeEvent();
         };
         this.generateButton.onclick = function () {
             _this.handleOnGenerateButtonClickEvent();
         };
-        this.pathfinderSelect.onclick = function () {
+        this.pathfinderSelect.onchange = function () {
             _this.handleOnPathfinderChangeEvent();
         };
         this.findButton.onclick = function () {
