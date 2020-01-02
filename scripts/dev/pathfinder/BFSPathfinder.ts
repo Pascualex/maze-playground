@@ -47,7 +47,6 @@ export class BFSPathfinder extends Pathfinder {
           if (this.onstep != null) {
             this.onstep(current.x + d.x, current.y + d.y, TileState.Discovered, invertedDirection);
           }
-          return;
         }
 
         if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType.Floor) {  

@@ -1273,7 +1273,6 @@ var BFSPathfinder = /** @class */ (function (_super) {
                     if (this.onstep != null) {
                         this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
                     }
-                    return;
                 }
                 if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
                     var invertedDirection = Direction_1.invertDirection(direction);
@@ -1347,15 +1346,16 @@ var DFSPathfinder = /** @class */ (function (_super) {
                     this.exitFound = true;
                     this.pathX = current.x + d.x;
                     this.pathY = current.y + d.y;
-                    if (this.onstep != null)
+                    if (this.onstep != null) {
                         this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Visited, invertedDirection);
-                    return;
+                    }
                 }
                 if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
                     var invertedDirection = Direction_1.invertDirection(direction);
                     this.discoveredTiles.push(new Pair_1.Pair(current.x + d.x, current.y + d.y));
-                    if (this.onstep != null)
+                    if (this.onstep != null) {
                         this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                    }
                 }
             }
         }
