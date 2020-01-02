@@ -1119,6 +1119,9 @@ function handleOnFindEvent() {
         grid.runPathfinder();
 }
 function handleOnResetEvent() {
+    if (resizeMessage != null) {
+        resizeMessage.style.display = 'none';
+    }
     resetGrid();
 }
 function openResizeMessage() {

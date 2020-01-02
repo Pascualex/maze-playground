@@ -97,6 +97,9 @@ function handleOnFindEvent(): void {
 }
 
 function handleOnResetEvent(): void {
+  if (resizeMessage != null) {
+    resizeMessage.style.display = 'none';
+  }
   resetGrid();
 }
 
