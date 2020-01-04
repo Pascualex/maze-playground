@@ -4,7 +4,7 @@ import { TileType } from '../utils/TileType';
 import { TileState } from '../utils/TileState';
 import { Queue } from '../utils/Queue';
 import { Pair } from '../utils/Pair';
-import { Direction, getAllDirections, getDirectionValue, invertDirection } from '../utils/Direction';
+import { Direction, getDirections, getDirectionValue, invertDirection } from '../utils/Direction';
 
 export class BFSPathfinder extends Pathfinder {
   private discoveredTiles: Queue<Pair>;
@@ -36,7 +36,7 @@ export class BFSPathfinder extends Pathfinder {
     const current: Pair = this.discoveredTiles.dequeue()!;
     if (this.onstep != null) this.onstep(current.x, current.y, TileState.Visited, null);
 
-    for (const direction of getAllDirections()) {
+    for (const direction of getDirections()) {
       const d: Pair = getDirectionValue(direction);
       if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState.Undiscovered) {
         if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType.Exit) {

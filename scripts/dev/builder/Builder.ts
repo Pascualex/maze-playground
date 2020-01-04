@@ -20,6 +20,7 @@ export abstract class Builder {
 
   public setGridModel(gridModel: GridModel): void {
     this.gridModel = gridModel;
+    this.reset();
   }
 
   public reset(): void {

@@ -1,10 +1,7 @@
 import { GridModel } from './GridModel';
 import { GridView } from './GridView';
 import { Pathfinder } from '../pathfinder/Pathfinder';
-import { BFSPathfinder } from '../pathfinder/BFSPathfinder';
-import { DFSPathfinder } from '../pathfinder/DFSPathfinder';
 import { Builder } from '../builder/Builder';
-import { BuilderX } from '../builder/BuilderX';
 import { TileType } from '../utils/TileType';
 import { TileState } from '../utils/TileState';
 import { Direction } from '../utils/Direction';
@@ -45,6 +42,7 @@ export class Grid {
     this.gridModel.reset(gridWidth, gridHeight);
     this.gridView.reset(scale);
     if (this.pathfinder != null) this.pathfinder.reset();
+    if (this.builder != null) this.builder.reset();
 
     this.currentTileType = TileType.Floor;
 
@@ -227,7 +225,21 @@ export class Grid {
   }
 
   private handleOnBuilderStep(x: number, y: number, tileType: TileType): void {
-    this.gridModel.setTypeAt(x, y, tileType);
-    this.gridView.drawTileAndNeighbours(x, y);
+    if (tileType == TileType.Entry) {
+      const oldExitTileX = this.gridModel.getEntryTileX();
+      const oldExitTileY = this.gridModel.getEntryTileY();
+      this.gridModel.setTypeAt(x, y, TileType.Entry);
+      this.gridView.drawTileAndNeighbours(x, y);  
+      this.gridView.drawTileAndNeighbours(oldExitTileX, oldExitTileY);   
+    } else if (tileType == TileType.Exit) {
+      const oldExitTileX = this.gridModel.getExitTileX();
+      const oldExitTileY = this.gridModel.getExitTileY();
+      this.gridModel.setTypeAt(x, y, TileType.Exit);
+      this.gridView.drawTileAndNeighbours(x, y);  
+      this.gridView.drawTileAndNeighbours(oldExitTileX, oldExitTileY);   
+    } else {
+      this.gridModel.setTypeAt(x, y, tileType);
+      this.gridView.drawTileAndNeighbours(x, y);
+    }
   }
 }

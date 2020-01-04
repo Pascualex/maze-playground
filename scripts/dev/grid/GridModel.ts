@@ -27,10 +27,10 @@ export class GridModel {
     this.states = new Array<TileState[]>(height);
     this.directions = new Array<Direction[]>(height);
 
-    for (let i = 0; i < this.height; i++) {
-      this.tiles[i] = new Array<TileType>(this.width);
-      this.states[i] = new Array<TileState>(this.width);
-      this.directions[i] = new Array<Direction>(this.width);
+    for (let i = 0; i < height; i++) {
+      this.tiles[i] = new Array<TileType>(width);
+      this.states[i] = new Array<TileState>(width);
+      this.directions[i] = new Array<Direction>(width);
     }
 
     this.resetTiles();

@@ -29,6 +29,7 @@ export abstract class Pathfinder {
 
   public setGridModel(gridModel: GridModel): void {
     this.gridModel = gridModel;
+    this.reset();
   }
 
   public reset(): void {

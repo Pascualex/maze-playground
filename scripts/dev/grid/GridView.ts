@@ -2,7 +2,7 @@ import { GridModel } from './GridModel';
 import { TileType } from '../utils/TileType';
 import { TileState } from '../utils/TileState';
 import { Pair } from '../utils/Pair';
-import { Direction, getAllDirections, getDirectionValue } from '../utils/Direction';
+import { Direction, getDirections, getDirectionValue } from '../utils/Direction';
 import { Constants } from '../utils/Constants';
 
 export class GridView {
@@ -82,7 +82,7 @@ export class GridView {
 
   public drawTileAndNeighbours(x: number, y: number): void {
     this.drawTile(x, y);
-    for (const direction of getAllDirections()) {
+    for (const direction of getDirections()) {
       const d: Pair = getDirectionValue(direction);
       this.drawTile(x + d.x, y + d.y);
     }
