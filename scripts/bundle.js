@@ -51,10 +51,6 @@ var BFSMazeBuilder = /** @class */ (function (_super) {
                 this.directions[i][j] = Direction_1.Direction.None;
             }
         }
-        if (this.onstep != null)
-            this.onstep(1, 1, TileType_1.TileType.Entry);
-        if (this.onstep != null)
-            this.onstep(this.width - 2, this.height - 2, TileType_1.TileType.Exit);
     };
     BFSMazeBuilder.prototype.mazeStep = function () {
         if (this.gridModel == null) {
@@ -99,7 +95,7 @@ var BFSMazeBuilder = /** @class */ (function (_super) {
 }(MazeBuilder_1.MazeBuilder));
 exports.BFSMazeBuilder = BFSMazeBuilder;
 
-},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Queue":17,"../utils/TileType":20,"./MazeBuilder":4}],2:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Queue":18,"../utils/TileType":21,"./MazeBuilder":5}],2:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -249,10 +245,6 @@ var DFSMazeBuilder = /** @class */ (function (_super) {
                 this.directions[i][j] = Direction_1.Direction.None;
             }
         }
-        if (this.onstep != null)
-            this.onstep(1, 1, TileType_1.TileType.Entry);
-        if (this.onstep != null)
-            this.onstep(this.width - 2, this.height - 2, TileType_1.TileType.Exit);
     };
     DFSMazeBuilder.prototype.mazeStep = function () {
         if (this.gridModel == null) {
@@ -297,7 +289,54 @@ var DFSMazeBuilder = /** @class */ (function (_super) {
 }(MazeBuilder_1.MazeBuilder));
 exports.DFSMazeBuilder = DFSMazeBuilder;
 
-},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Stack":18,"../utils/TileType":20,"./MazeBuilder":4}],4:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Stack":19,"../utils/TileType":21,"./MazeBuilder":5}],4:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var Builder_1 = require("./Builder");
+var TileType_1 = require("../utils/TileType");
+var ForestBuilder = /** @class */ (function (_super) {
+    __extends(ForestBuilder, _super);
+    function ForestBuilder() {
+        return _super.call(this) || this;
+    }
+    ForestBuilder.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+    };
+    ForestBuilder.prototype.initialization = function () {
+        if (this.gridModel == null)
+            return;
+        var width = this.gridModel.getWidth();
+        var height = this.gridModel.getHeight();
+        if (this.onstep != null)
+            this.onstep(0, 0, TileType_1.TileType.Entry);
+        if (this.onstep != null)
+            this.onstep(width - 1, height - 1, TileType_1.TileType.Exit);
+    };
+    ForestBuilder.prototype.step = function () {
+        if (this.gridModel == null) {
+            this.running = false;
+            return;
+        }
+        this.running = false;
+    };
+    return ForestBuilder;
+}(Builder_1.Builder));
+exports.ForestBuilder = ForestBuilder;
+
+},{"../utils/TileType":21,"./Builder":2}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -385,7 +424,7 @@ var MazeBuilder = /** @class */ (function (_super) {
         this.wall++;
     };
     MazeBuilder.prototype.fillStep = function () {
-        if (this.wall >= Math.max(this.width, this.height)) {
+        if (this.wall > ((this.width + this.height) / 2)) {
             this.wallFilled = true;
             return;
         }
@@ -403,7 +442,7 @@ var MazeBuilder = /** @class */ (function (_super) {
 }(Builder_1.Builder));
 exports.MazeBuilder = MazeBuilder;
 
-},{"../utils/TileType":20,"./Builder":2}],5:[function(require,module,exports){
+},{"../utils/TileType":21,"./Builder":2}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var List_1 = require("../utils/List");
@@ -511,7 +550,7 @@ var ControlBar = /** @class */ (function () {
 }());
 exports.ControlBar = ControlBar;
 
-},{"../utils/List":15}],6:[function(require,module,exports){
+},{"../utils/List":16}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GridModel_1 = require("./GridModel");
@@ -731,7 +770,7 @@ var Grid = /** @class */ (function () {
 }());
 exports.Grid = Grid;
 
-},{"../utils/Constants":13,"../utils/TileType":20,"./GridModel":7,"./GridView":8}],7:[function(require,module,exports){
+},{"../utils/Constants":14,"../utils/TileType":21,"./GridModel":8,"./GridView":9}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
@@ -894,7 +933,7 @@ var GridModel = /** @class */ (function () {
 }());
 exports.GridModel = GridModel;
 
-},{"../utils/Direction":14,"../utils/TileState":19,"../utils/TileType":20}],8:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/TileState":20,"../utils/TileType":21}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
@@ -1264,7 +1303,7 @@ var GridView = /** @class */ (function () {
 }());
 exports.GridView = GridView;
 
-},{"../utils/Constants":13,"../utils/Direction":14,"../utils/Pair":16,"../utils/TileState":19,"../utils/TileType":20}],9:[function(require,module,exports){
+},{"../utils/Constants":14,"../utils/Direction":15,"../utils/Pair":17,"../utils/TileState":20,"../utils/TileType":21}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./grid/Grid");
@@ -1273,6 +1312,7 @@ var BFSPathfinder_1 = require("./pathfinder/BFSPathfinder");
 var DFSPathfinder_1 = require("./pathfinder/DFSPathfinder");
 var DFSMazeBuilder_1 = require("./builder/DFSMazeBuilder");
 var BFSMazeBuilder_1 = require("./builder/BFSMazeBuilder");
+var ForestBuilder_1 = require("./builder/ForestBuilder");
 var grid;
 var controlBar;
 var htmlGrid;
@@ -1338,10 +1378,11 @@ function createControlBar() {
     if (!(resetButton instanceof HTMLAnchorElement))
         return;
     controlBar = new ControlBar_1.ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, resetButton);
-    controlBar.addBuilder("DFS (Maze)", new DFSMazeBuilder_1.DFSMazeBuilder());
-    controlBar.addBuilder("BFS (Maze)", new BFSMazeBuilder_1.BFSMazeBuilder());
-    controlBar.addPathfinder("BFS", new BFSPathfinder_1.BFSPathfinder());
-    controlBar.addPathfinder("DFS", new DFSPathfinder_1.DFSPathfinder());
+    controlBar.addBuilder('DFS (Maze)', new DFSMazeBuilder_1.DFSMazeBuilder());
+    controlBar.addBuilder('BFS (Maze)', new BFSMazeBuilder_1.BFSMazeBuilder());
+    controlBar.addBuilder('Forest builder', new ForestBuilder_1.ForestBuilder());
+    controlBar.addPathfinder('BFS', new BFSPathfinder_1.BFSPathfinder());
+    controlBar.addPathfinder('DFS', new DFSPathfinder_1.DFSPathfinder());
 }
 function handleOnBuilderChangeEvent(builder) {
     if (grid != null)
@@ -1453,7 +1494,7 @@ function setupTouchEvents() {
     }
 }
 
-},{"./builder/BFSMazeBuilder":1,"./builder/DFSMazeBuilder":3,"./controlbar/ControlBar":5,"./grid/Grid":6,"./pathfinder/BFSPathfinder":10,"./pathfinder/DFSPathfinder":11}],10:[function(require,module,exports){
+},{"./builder/BFSMazeBuilder":1,"./builder/DFSMazeBuilder":3,"./builder/ForestBuilder":4,"./controlbar/ControlBar":6,"./grid/Grid":7,"./pathfinder/BFSPathfinder":11,"./pathfinder/DFSPathfinder":12}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1493,13 +1534,19 @@ var BFSPathfinder = /** @class */ (function (_super) {
         var x = this.gridModel.getEntryTileX();
         var y = this.gridModel.getEntryTileY();
         this.discoveredTiles.enqueue(new Pair_1.Pair(x, y));
+        this.discoveredTiles.enqueue(null);
     };
     BFSPathfinder.prototype.step = function () {
-        if (this.gridModel == null || this.discoveredTiles.isEmpty()) {
+        if (this.gridModel == null || this.discoveredTiles.size() <= 1) {
             this.running = false;
             return;
         }
         var current = this.discoveredTiles.dequeue();
+        if (current == null) {
+            this.discoveredTiles.shuffle();
+            this.discoveredTiles.enqueue(null);
+            current = this.discoveredTiles.dequeue();
+        }
         if (this.onstep != null)
             this.onstep(current.x, current.y, TileState_1.TileState.Visited, null);
         for (var _i = 0, _a = Direction_1.getDirections(); _i < _a.length; _i++) {
@@ -1529,7 +1576,7 @@ var BFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.BFSPathfinder = BFSPathfinder;
 
-},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Queue":17,"../utils/TileState":19,"../utils/TileType":20,"./Pathfinder":12}],11:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Queue":18,"../utils/TileState":20,"../utils/TileType":21,"./Pathfinder":13}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1605,7 +1652,7 @@ var DFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.DFSPathfinder = DFSPathfinder;
 
-},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Stack":18,"../utils/TileState":19,"../utils/TileType":20,"./Pathfinder":12}],12:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Stack":19,"../utils/TileState":20,"../utils/TileType":21,"./Pathfinder":13}],13:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1727,7 +1774,7 @@ var Pathfinder = /** @class */ (function () {
 }());
 exports.Pathfinder = Pathfinder;
 
-},{"../utils/Direction":14,"../utils/TileState":19,"../utils/TileType":20}],13:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/TileState":20,"../utils/TileType":21}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Constants;
@@ -1735,7 +1782,7 @@ var Constants;
     Constants[Constants["TileSize"] = 32] = "TileSize";
 })(Constants = exports.Constants || (exports.Constants = {}));
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair_1 = require("./Pair");
@@ -1833,7 +1880,7 @@ function shuffle(array) {
     return array;
 }
 
-},{"./Pair":16}],15:[function(require,module,exports){
+},{"./Pair":17}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var List = /** @class */ (function () {
@@ -1861,7 +1908,7 @@ var List = /** @class */ (function () {
 }());
 exports.List = List;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair = /** @class */ (function () {
@@ -1873,7 +1920,7 @@ var Pair = /** @class */ (function () {
 }());
 exports.Pair = Pair;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Queue = /** @class */ (function () {
@@ -1898,11 +1945,21 @@ var Queue = /** @class */ (function () {
     Queue.prototype.isEmpty = function () {
         return this.storage.length == 0;
     };
+    Queue.prototype.shuffle = function () {
+        var currentIndex = this.storage.length;
+        while (0 != currentIndex) {
+            var randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            var aux = this.storage[currentIndex];
+            this.storage[currentIndex] = this.storage[randomIndex];
+            this.storage[randomIndex] = aux;
+        }
+    };
     return Queue;
 }());
 exports.Queue = Queue;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Stack = /** @class */ (function () {
@@ -1931,7 +1988,7 @@ var Stack = /** @class */ (function () {
 }());
 exports.Stack = Stack;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileState;
@@ -1942,7 +1999,7 @@ var TileState;
     TileState[TileState["Path"] = 3] = "Path";
 })(TileState = exports.TileState || (exports.TileState = {}));
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType;
@@ -1953,4 +2010,4 @@ var TileType;
     TileType[TileType["Exit"] = 3] = "Exit";
 })(TileType = exports.TileType || (exports.TileType = {}));
 
-},{}]},{},[9]);
+},{}]},{},[10]);

@@ -26,4 +26,17 @@ export class Queue<T> {
   public isEmpty(): boolean {
     return this.storage.length == 0;
   }
+
+  public shuffle(): void {
+    let currentIndex: number = this.storage.length;
+  
+    while (0 != currentIndex) {
+      let randomIndex: number = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+  
+      let aux: T = this.storage[currentIndex];
+      this.storage[currentIndex] = this.storage[randomIndex];
+      this.storage[randomIndex] = aux;
+    }
+  }
 }

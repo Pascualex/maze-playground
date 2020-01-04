@@ -7,11 +7,11 @@ import { Pair } from '../utils/Pair';
 import { Direction, getDirections, getDirectionValue, invertDirection } from '../utils/Direction';
 
 export class BFSPathfinder extends Pathfinder {
-  private discoveredTiles: Queue<Pair>;
+  private discoveredTiles: Queue<Pair | null>;
 
   constructor() {
     super();
-    this.discoveredTiles = new Queue<Pair>();
+    this.discoveredTiles = new Queue<Pair | null>();
     this.reset();
   }
 
@@ -25,15 +25,22 @@ export class BFSPathfinder extends Pathfinder {
     const x: number = this.gridModel.getEntryTileX();
     const y: number = this.gridModel.getEntryTileY();
     this.discoveredTiles.enqueue(new Pair(x, y));
+    this.discoveredTiles.enqueue(null);
   }
 
   protected step(): void {
-    if (this.gridModel == null || this.discoveredTiles.isEmpty()) {
+    if (this.gridModel == null || this.discoveredTiles.size() <= 1) {
       this.running = false;
       return;
     }
 
-    const current: Pair = this.discoveredTiles.dequeue()!;
+    let current: Pair | null = this.discoveredTiles.dequeue();
+    if (current == null) {
+      this.discoveredTiles.shuffle();
+      this.discoveredTiles.enqueue(null);
+      current = this.discoveredTiles.dequeue()!;
+    }
+
     if (this.onstep != null) this.onstep(current.x, current.y, TileState.Visited, null);
 
     for (const direction of getDirections()) {

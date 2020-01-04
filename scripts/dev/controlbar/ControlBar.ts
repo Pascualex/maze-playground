@@ -1,6 +1,6 @@
-import { Pathfinder } from "../pathfinder/Pathfinder";
-import { List } from "../utils/List";
-import { Builder } from "../builder/Builder";
+import { Pathfinder } from '../pathfinder/Pathfinder';
+import { List } from '../utils/List';
+import { Builder } from '../builder/Builder';
 
 export class ControlBar {
   private builderSelect: HTMLSelectElement;

@@ -45,9 +45,6 @@ export class DFSMazeBuilder extends MazeBuilder {
         this.directions[i][j] = Direction.None;
       }
     }
-
-    if (this.onstep != null) this.onstep(1, 1, TileType.Entry);
-    if (this.onstep != null) this.onstep(this.width - 2, this.height - 2, TileType.Exit);
   }
 
   protected mazeStep(): void {

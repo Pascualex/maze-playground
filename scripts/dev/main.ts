@@ -6,6 +6,7 @@ import { DFSPathfinder } from './pathfinder/DFSPathfinder';
 import { Builder } from './builder/Builder';
 import { DFSMazeBuilder } from './builder/DFSMazeBuilder';
 import { BFSMazeBuilder } from './builder/BFSMazeBuilder';
+import { ForestBuilder } from './builder/ForestBuilder';
 
 let grid: Grid | null;
 let controlBar: ControlBar | null;
@@ -75,11 +76,12 @@ function createControlBar(): void {
     resetButton
   );
 
-  controlBar.addBuilder("DFS (Maze)", new DFSMazeBuilder());
-  controlBar.addBuilder("BFS (Maze)", new BFSMazeBuilder());
+  controlBar.addBuilder('DFS (Maze)', new DFSMazeBuilder());
+  controlBar.addBuilder('BFS (Maze)', new BFSMazeBuilder());
+  controlBar.addBuilder('Forest builder', new ForestBuilder());
 
-  controlBar.addPathfinder("BFS", new BFSPathfinder());
-  controlBar.addPathfinder("DFS", new DFSPathfinder());
+  controlBar.addPathfinder('BFS', new BFSPathfinder());
+  controlBar.addPathfinder('DFS', new DFSPathfinder());
 }
 
 function handleOnBuilderChangeEvent(builder: Builder): void {

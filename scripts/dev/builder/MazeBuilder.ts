@@ -74,7 +74,7 @@ export abstract class MazeBuilder extends Builder {
   }
 
   private fillStep(): void {
-    if (this.wall >= Math.max(this.width, this.height) {
+    if (this.wall > ((this.width + this.height) / 2)) {
       this.wallFilled = true;
       return;
     }
