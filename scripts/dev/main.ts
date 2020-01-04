@@ -4,8 +4,8 @@ import { Pathfinder } from './pathfinder/Pathfinder';
 import { BFSPathfinder } from './pathfinder/BFSPathfinder';
 import { DFSPathfinder } from './pathfinder/DFSPathfinder';
 import { Builder } from './builder/Builder';
-import { DFSBuilder } from './builder/DFSBuilder';
-import { BFSBuilder } from './builder/BFSBuilder';
+import { DFSMazeBuilder } from './builder/DFSMazeBuilder';
+import { BFSMazeBuilder } from './builder/BFSMazeBuilder';
 
 let grid: Grid | null;
 let controlBar: ControlBar | null;
@@ -75,8 +75,8 @@ function createControlBar(): void {
     resetButton
   );
 
-  controlBar.addBuilder("DFS", new DFSBuilder());
-  controlBar.addBuilder("BFS", new BFSBuilder());
+  controlBar.addBuilder("DFS (Maze)", new DFSMazeBuilder());
+  controlBar.addBuilder("BFS (Maze)", new BFSMazeBuilder());
 
   controlBar.addPathfinder("BFS", new BFSPathfinder());
   controlBar.addPathfinder("DFS", new DFSPathfinder());

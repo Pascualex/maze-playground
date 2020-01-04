@@ -16,28 +16,21 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
 var Direction_1 = require("../utils/Direction");
-var Builder_1 = require("./Builder");
+var MazeBuilder_1 = require("./MazeBuilder");
 var Queue_1 = require("../utils/Queue");
 var Pair_1 = require("../utils/Pair");
-var BFSBuilder = /** @class */ (function (_super) {
-    __extends(BFSBuilder, _super);
-    function BFSBuilder() {
+var BFSMazeBuilder = /** @class */ (function (_super) {
+    __extends(BFSMazeBuilder, _super);
+    function BFSMazeBuilder() {
         var _this = _super.call(this) || this;
         _this.discoveredTiles = new Queue_1.Queue();
-        _this.reset();
         return _this;
     }
-    BFSBuilder.prototype.reset = function () {
+    BFSMazeBuilder.prototype.reset = function () {
         _super.prototype.reset.call(this);
         if (this.gridModel == null) {
             return;
         }
-        this.width = this.gridModel.getWidth();
-        if ((this.width % 2) == 0)
-            this.width--;
-        this.height = this.gridModel.getHeight();
-        if ((this.height % 2) == 0)
-            this.height--;
         this.tiles = new Array(this.height);
         this.directions = new Array(this.height);
         for (var i = 0; i < this.height; i++) {
@@ -45,14 +38,13 @@ var BFSBuilder = /** @class */ (function (_super) {
             this.directions[i] = new Array(this.width);
         }
     };
-    BFSBuilder.prototype.initialization = function () {
-        if (this.gridModel == null) {
+    BFSMazeBuilder.prototype.initialization = function () {
+        _super.prototype.initialization.call(this);
+        if (this.gridModel == null)
             return;
-        }
-        this.wall = 0;
-        this.wallBuilt = false;
         this.discoveredTiles.clear();
         this.discoveredTiles.enqueue(new Pair_1.Pair(1, 1));
+        this.currentTile = null;
         for (var i = 0; i < this.height; i++) {
             for (var j = 0; j < this.width; j++) {
                 this.tiles[i][j] = false;
@@ -64,13 +56,15 @@ var BFSBuilder = /** @class */ (function (_super) {
         if (this.onstep != null)
             this.onstep(this.width - 2, this.height - 2, TileType_1.TileType.Exit);
     };
-    BFSBuilder.prototype.step = function () {
+    BFSMazeBuilder.prototype.mazeStep = function () {
         if (this.gridModel == null) {
             this.running = false;
             return;
         }
-        if (!this.wallBuilt) {
-            this.buildWall();
+        if (this.currentTile != null) {
+            if (this.onstep != null)
+                this.onstep(this.currentTile.x, this.currentTile.y, TileType_1.TileType.Floor);
+            this.currentTile = null;
             return;
         }
         var current;
@@ -82,75 +76,30 @@ var BFSBuilder = /** @class */ (function (_super) {
             current = this.discoveredTiles.dequeue();
         } while (this.tiles[current.y][current.x]);
         this.tiles[current.y][current.x] = true;
-        this.buildPath(current.x, current.y, this.directions[current.y][current.x]);
+        var d = Direction_1.getDirectionValue(this.directions[current.y][current.x]);
+        if (this.onstep != null)
+            this.onstep(current.x + d.x, current.y + d.y, TileType_1.TileType.Floor);
+        if (this.directions[current.y][current.x] != Direction_1.Direction.None)
+            this.currentTile = current;
         if (this.gridModel.getTypeAt(current.x, current.y) == TileType_1.TileType.Exit)
             return;
         for (var _i = 0, _a = Direction_1.getRandomizedDirections(); _i < _a.length; _i++) {
             var direction = _a[_i];
-            var d = Direction_1.getDirectionValue(direction);
+            var d_1 = Direction_1.getDirectionValue(direction);
             var invertedDirection = Direction_1.invertDirection(direction);
-            var x = current.x + (d.x * 2);
-            var y = current.y + (d.y * 2);
+            var x = current.x + (d_1.x * 2);
+            var y = current.y + (d_1.y * 2);
             if (x < 0 || x >= this.width || y < 0 || y >= this.height)
                 continue;
             this.directions[y][x] = invertedDirection;
             this.discoveredTiles.enqueue(new Pair_1.Pair(x, y));
         }
     };
-    BFSBuilder.prototype.buildPath = function (x, y, pathDirection) {
-        if (this.gridModel == null) {
-            this.running = false;
-            return;
-        }
-        for (var _i = 0, _a = Direction_1.getExtendedDirections(); _i < _a.length; _i++) {
-            var direction = _a[_i];
-            var d = Direction_1.getDirectionValue(direction);
-            if (direction != pathDirection) {
-                if (this.gridModel.getTypeAt(x + d.x, y + d.y) == TileType_1.TileType.Floor) {
-                    if (this.onstep != null)
-                        this.onstep(x + d.x, y + d.y, TileType_1.TileType.Wall);
-                }
-            }
-            else {
-                if (this.gridModel.getTypeAt(x + d.x, y + d.y) == TileType_1.TileType.Wall) {
-                    if (this.onstep != null)
-                        this.onstep(x + d.x, y + d.y, TileType_1.TileType.Floor);
-                }
-            }
-        }
-    };
-    BFSBuilder.prototype.buildWall = function () {
-        if (this.wall >= Math.max((this.width + 1) / 2, (this.height + 1) / 2)) {
-            this.wallBuilt = true;
-            return;
-        }
-        if (this.wall < ((this.width + 1) / 2)) {
-            if (this.onstep != null)
-                this.onstep(this.wall, 0, TileType_1.TileType.Wall);
-            if (this.onstep != null)
-                this.onstep(this.width - this.wall - 1, 0, TileType_1.TileType.Wall);
-            if (this.onstep != null)
-                this.onstep(this.wall, this.height - 1, TileType_1.TileType.Wall);
-            if (this.onstep != null)
-                this.onstep(this.width - this.wall - 1, this.height - 1, TileType_1.TileType.Wall);
-        }
-        if (this.wall < ((this.height + 1) / 2)) {
-            if (this.onstep != null)
-                this.onstep(0, this.wall, TileType_1.TileType.Wall);
-            if (this.onstep != null)
-                this.onstep(0, this.height - this.wall - 1, TileType_1.TileType.Wall);
-            if (this.onstep != null)
-                this.onstep(this.width - 1, this.wall, TileType_1.TileType.Wall);
-            if (this.onstep != null)
-                this.onstep(this.width - 1, this.height - this.wall - 1, TileType_1.TileType.Wall);
-        }
-        this.wall++;
-    };
-    return BFSBuilder;
-}(Builder_1.Builder));
-exports.BFSBuilder = BFSBuilder;
+    return BFSMazeBuilder;
+}(MazeBuilder_1.MazeBuilder));
+exports.BFSMazeBuilder = BFSMazeBuilder;
 
-},{"../utils/Direction":13,"../utils/Pair":15,"../utils/Queue":16,"../utils/TileType":19,"./Builder":2}],2:[function(require,module,exports){
+},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Queue":17,"../utils/TileType":20,"./MazeBuilder":4}],2:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -265,28 +214,21 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
 var Direction_1 = require("../utils/Direction");
-var Builder_1 = require("./Builder");
+var MazeBuilder_1 = require("./MazeBuilder");
 var Stack_1 = require("../utils/Stack");
 var Pair_1 = require("../utils/Pair");
-var DFSBuilder = /** @class */ (function (_super) {
-    __extends(DFSBuilder, _super);
-    function DFSBuilder() {
+var DFSMazeBuilder = /** @class */ (function (_super) {
+    __extends(DFSMazeBuilder, _super);
+    function DFSMazeBuilder() {
         var _this = _super.call(this) || this;
         _this.discoveredTiles = new Stack_1.Stack();
-        _this.reset();
         return _this;
     }
-    DFSBuilder.prototype.reset = function () {
+    DFSMazeBuilder.prototype.reset = function () {
         _super.prototype.reset.call(this);
         if (this.gridModel == null) {
             return;
         }
-        this.width = this.gridModel.getWidth();
-        if ((this.width % 2) == 0)
-            this.width--;
-        this.height = this.gridModel.getHeight();
-        if ((this.height % 2) == 0)
-            this.height--;
         this.tiles = new Array(this.height);
         this.directions = new Array(this.height);
         for (var i = 0; i < this.height; i++) {
@@ -294,14 +236,13 @@ var DFSBuilder = /** @class */ (function (_super) {
             this.directions[i] = new Array(this.width);
         }
     };
-    DFSBuilder.prototype.initialization = function () {
-        if (this.gridModel == null) {
+    DFSMazeBuilder.prototype.initialization = function () {
+        _super.prototype.initialization.call(this);
+        if (this.gridModel == null)
             return;
-        }
-        this.wall = 0;
-        this.wallBuilt = false;
         this.discoveredTiles.clear();
         this.discoveredTiles.push(new Pair_1.Pair(1, 1));
+        this.currentTile = null;
         for (var i = 0; i < this.height; i++) {
             for (var j = 0; j < this.width; j++) {
                 this.tiles[i][j] = false;
@@ -313,13 +254,15 @@ var DFSBuilder = /** @class */ (function (_super) {
         if (this.onstep != null)
             this.onstep(this.width - 2, this.height - 2, TileType_1.TileType.Exit);
     };
-    DFSBuilder.prototype.step = function () {
+    DFSMazeBuilder.prototype.mazeStep = function () {
         if (this.gridModel == null) {
             this.running = false;
             return;
         }
-        if (!this.wallBuilt) {
-            this.buildWall();
+        if (this.currentTile != null) {
+            if (this.onstep != null)
+                this.onstep(this.currentTile.x, this.currentTile.y, TileType_1.TileType.Floor);
+            this.currentTile = null;
             return;
         }
         var current;
@@ -331,46 +274,92 @@ var DFSBuilder = /** @class */ (function (_super) {
             current = this.discoveredTiles.pop();
         } while (this.tiles[current.y][current.x]);
         this.tiles[current.y][current.x] = true;
-        this.buildPath(current.x, current.y, this.directions[current.y][current.x]);
+        var d = Direction_1.getDirectionValue(this.directions[current.y][current.x]);
+        if (this.onstep != null)
+            this.onstep(current.x + d.x, current.y + d.y, TileType_1.TileType.Floor);
+        if (this.directions[current.y][current.x] != Direction_1.Direction.None)
+            this.currentTile = current;
         if (this.gridModel.getTypeAt(current.x, current.y) == TileType_1.TileType.Exit)
             return;
         for (var _i = 0, _a = Direction_1.getRandomizedDirections(); _i < _a.length; _i++) {
             var direction = _a[_i];
-            var d = Direction_1.getDirectionValue(direction);
+            var d_1 = Direction_1.getDirectionValue(direction);
             var invertedDirection = Direction_1.invertDirection(direction);
-            var x = current.x + (d.x * 2);
-            var y = current.y + (d.y * 2);
+            var x = current.x + (d_1.x * 2);
+            var y = current.y + (d_1.y * 2);
             if (x < 0 || x >= this.width || y < 0 || y >= this.height)
                 continue;
             this.directions[y][x] = invertedDirection;
             this.discoveredTiles.push(new Pair_1.Pair(x, y));
         }
     };
-    DFSBuilder.prototype.buildPath = function (x, y, pathDirection) {
+    return DFSMazeBuilder;
+}(MazeBuilder_1.MazeBuilder));
+exports.DFSMazeBuilder = DFSMazeBuilder;
+
+},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Stack":18,"../utils/TileType":20,"./MazeBuilder":4}],4:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var TileType_1 = require("../utils/TileType");
+var Builder_1 = require("./Builder");
+var MazeBuilder = /** @class */ (function (_super) {
+    __extends(MazeBuilder, _super);
+    function MazeBuilder() {
+        return _super.call(this) || this;
+    }
+    MazeBuilder.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+        if (this.gridModel == null) {
+            return;
+        }
+        this.width = this.gridModel.getWidth();
+        if ((this.width % 2) == 0)
+            this.width--;
+        this.height = this.gridModel.getHeight();
+        if ((this.height % 2) == 0)
+            this.height--;
+    };
+    MazeBuilder.prototype.initialization = function () {
+        if (this.gridModel == null) {
+            return;
+        }
+        this.wall = 0;
+        this.wallBuilt = false;
+        this.wallFilled = false;
+        if (this.onstep != null)
+            this.onstep(1, 1, TileType_1.TileType.Entry);
+        if (this.onstep != null)
+            this.onstep(this.width - 2, this.height - 2, TileType_1.TileType.Exit);
+    };
+    MazeBuilder.prototype.step = function () {
         if (this.gridModel == null) {
             this.running = false;
             return;
         }
-        for (var _i = 0, _a = Direction_1.getExtendedDirections(); _i < _a.length; _i++) {
-            var direction = _a[_i];
-            var d = Direction_1.getDirectionValue(direction);
-            if (direction != pathDirection) {
-                if (this.gridModel.getTypeAt(x + d.x, y + d.y) == TileType_1.TileType.Floor) {
-                    if (this.onstep != null)
-                        this.onstep(x + d.x, y + d.y, TileType_1.TileType.Wall);
-                }
-            }
-            else {
-                if (this.gridModel.getTypeAt(x + d.x, y + d.y) == TileType_1.TileType.Wall) {
-                    if (this.onstep != null)
-                        this.onstep(x + d.x, y + d.y, TileType_1.TileType.Floor);
-                }
-            }
-        }
+        if (!this.wallBuilt)
+            this.wallStep();
+        else if (!this.wallFilled)
+            this.fillStep();
+        else
+            this.mazeStep();
     };
-    DFSBuilder.prototype.buildWall = function () {
+    MazeBuilder.prototype.wallStep = function () {
         if (this.wall >= Math.max((this.width + 1) / 2, (this.height + 1) / 2)) {
             this.wallBuilt = true;
+            this.wall = 1;
             return;
         }
         if (this.wall < ((this.width + 1) / 2)) {
@@ -395,11 +384,26 @@ var DFSBuilder = /** @class */ (function (_super) {
         }
         this.wall++;
     };
-    return DFSBuilder;
+    MazeBuilder.prototype.fillStep = function () {
+        if (this.wall >= Math.max(this.width, this.height)) {
+            this.wallFilled = true;
+            return;
+        }
+        var start = Math.max(0, this.wall - this.width + 1);
+        var end = Math.min(this.wall + 1, this.height);
+        for (var i = start; i < end; i++) {
+            if (this.onstep != null)
+                this.onstep(this.wall - i, i, TileType_1.TileType.Wall);
+            if (this.onstep != null)
+                this.onstep(this.width - this.wall + i - 1, this.height - i - 1, TileType_1.TileType.Wall);
+        }
+        this.wall++;
+    };
+    return MazeBuilder;
 }(Builder_1.Builder));
-exports.DFSBuilder = DFSBuilder;
+exports.MazeBuilder = MazeBuilder;
 
-},{"../utils/Direction":13,"../utils/Pair":15,"../utils/Stack":17,"../utils/TileType":19,"./Builder":2}],4:[function(require,module,exports){
+},{"../utils/TileType":20,"./Builder":2}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var List_1 = require("../utils/List");
@@ -507,7 +511,7 @@ var ControlBar = /** @class */ (function () {
 }());
 exports.ControlBar = ControlBar;
 
-},{"../utils/List":14}],5:[function(require,module,exports){
+},{"../utils/List":15}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GridModel_1 = require("./GridModel");
@@ -727,7 +731,7 @@ var Grid = /** @class */ (function () {
 }());
 exports.Grid = Grid;
 
-},{"../utils/Constants":12,"../utils/TileType":19,"./GridModel":6,"./GridView":7}],6:[function(require,module,exports){
+},{"../utils/Constants":13,"../utils/TileType":20,"./GridModel":7,"./GridView":8}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
@@ -890,7 +894,7 @@ var GridModel = /** @class */ (function () {
 }());
 exports.GridModel = GridModel;
 
-},{"../utils/Direction":13,"../utils/TileState":18,"../utils/TileType":19}],7:[function(require,module,exports){
+},{"../utils/Direction":14,"../utils/TileState":19,"../utils/TileType":20}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
@@ -1260,15 +1264,15 @@ var GridView = /** @class */ (function () {
 }());
 exports.GridView = GridView;
 
-},{"../utils/Constants":12,"../utils/Direction":13,"../utils/Pair":15,"../utils/TileState":18,"../utils/TileType":19}],8:[function(require,module,exports){
+},{"../utils/Constants":13,"../utils/Direction":14,"../utils/Pair":16,"../utils/TileState":19,"../utils/TileType":20}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./grid/Grid");
 var ControlBar_1 = require("./controlbar/ControlBar");
 var BFSPathfinder_1 = require("./pathfinder/BFSPathfinder");
 var DFSPathfinder_1 = require("./pathfinder/DFSPathfinder");
-var DFSBuilder_1 = require("./builder/DFSBuilder");
-var BFSBuilder_1 = require("./builder/BFSBuilder");
+var DFSMazeBuilder_1 = require("./builder/DFSMazeBuilder");
+var BFSMazeBuilder_1 = require("./builder/BFSMazeBuilder");
 var grid;
 var controlBar;
 var htmlGrid;
@@ -1334,8 +1338,8 @@ function createControlBar() {
     if (!(resetButton instanceof HTMLAnchorElement))
         return;
     controlBar = new ControlBar_1.ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, resetButton);
-    controlBar.addBuilder("DFS", new DFSBuilder_1.DFSBuilder());
-    controlBar.addBuilder("BFS", new BFSBuilder_1.BFSBuilder());
+    controlBar.addBuilder("DFS (Maze)", new DFSMazeBuilder_1.DFSMazeBuilder());
+    controlBar.addBuilder("BFS (Maze)", new BFSMazeBuilder_1.BFSMazeBuilder());
     controlBar.addPathfinder("BFS", new BFSPathfinder_1.BFSPathfinder());
     controlBar.addPathfinder("DFS", new DFSPathfinder_1.DFSPathfinder());
 }
@@ -1449,7 +1453,7 @@ function setupTouchEvents() {
     }
 }
 
-},{"./builder/BFSBuilder":1,"./builder/DFSBuilder":3,"./controlbar/ControlBar":4,"./grid/Grid":5,"./pathfinder/BFSPathfinder":9,"./pathfinder/DFSPathfinder":10}],9:[function(require,module,exports){
+},{"./builder/BFSMazeBuilder":1,"./builder/DFSMazeBuilder":3,"./controlbar/ControlBar":5,"./grid/Grid":6,"./pathfinder/BFSPathfinder":10,"./pathfinder/DFSPathfinder":11}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1525,7 +1529,7 @@ var BFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.BFSPathfinder = BFSPathfinder;
 
-},{"../utils/Direction":13,"../utils/Pair":15,"../utils/Queue":16,"../utils/TileState":18,"../utils/TileType":19,"./Pathfinder":11}],10:[function(require,module,exports){
+},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Queue":17,"../utils/TileState":19,"../utils/TileType":20,"./Pathfinder":12}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1601,7 +1605,7 @@ var DFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.DFSPathfinder = DFSPathfinder;
 
-},{"../utils/Direction":13,"../utils/Pair":15,"../utils/Stack":17,"../utils/TileState":18,"../utils/TileType":19,"./Pathfinder":11}],11:[function(require,module,exports){
+},{"../utils/Direction":14,"../utils/Pair":16,"../utils/Stack":18,"../utils/TileState":19,"../utils/TileType":20,"./Pathfinder":12}],12:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1723,7 +1727,7 @@ var Pathfinder = /** @class */ (function () {
 }());
 exports.Pathfinder = Pathfinder;
 
-},{"../utils/Direction":13,"../utils/TileState":18,"../utils/TileType":19}],12:[function(require,module,exports){
+},{"../utils/Direction":14,"../utils/TileState":19,"../utils/TileType":20}],13:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Constants;
@@ -1731,7 +1735,7 @@ var Constants;
     Constants[Constants["TileSize"] = 32] = "TileSize";
 })(Constants = exports.Constants || (exports.Constants = {}));
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair_1 = require("./Pair");
@@ -1829,7 +1833,7 @@ function shuffle(array) {
     return array;
 }
 
-},{"./Pair":15}],14:[function(require,module,exports){
+},{"./Pair":16}],15:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var List = /** @class */ (function () {
@@ -1857,7 +1861,7 @@ var List = /** @class */ (function () {
 }());
 exports.List = List;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair = /** @class */ (function () {
@@ -1869,7 +1873,7 @@ var Pair = /** @class */ (function () {
 }());
 exports.Pair = Pair;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Queue = /** @class */ (function () {
@@ -1898,7 +1902,7 @@ var Queue = /** @class */ (function () {
 }());
 exports.Queue = Queue;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Stack = /** @class */ (function () {
@@ -1927,7 +1931,7 @@ var Stack = /** @class */ (function () {
 }());
 exports.Stack = Stack;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileState;
@@ -1938,7 +1942,7 @@ var TileState;
     TileState[TileState["Path"] = 3] = "Path";
 })(TileState = exports.TileState || (exports.TileState = {}));
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType;
@@ -1949,4 +1953,4 @@ var TileType;
     TileType[TileType["Exit"] = 3] = "Exit";
 })(TileType = exports.TileType || (exports.TileType = {}));
 
-},{}]},{},[8]);
+},{}]},{},[9]);
