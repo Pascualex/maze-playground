@@ -9,14 +9,14 @@ export class Queue<T> {
     this.storage.length = 0;
   }
 
-  public enqueue(value: T): void {
-    this.storage.push(value);
+  public enqueue(element: T): void {
+    this.storage.push(element);
   }
 
   public dequeue(): T | null {
-    const value: T | undefined = this.storage.shift();
-    if (value == undefined) return null;
-    return value;
+    const element: T | undefined = this.storage.shift();
+    if (element == undefined) return null;
+    return element;
   }
 
   public size(): number {

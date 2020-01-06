@@ -1,16 +1,16 @@
 import { Pathfinder } from './Pathfinder';
 import { TileType } from '../utils/TileType';
 import { TileState } from '../utils/TileState';
-import { Queue } from '../utils/Queue';
+import { Heap } from '../utils/Heap';
 import { Pair } from '../utils/Pair';
 import { Direction, getDirections, getDirectionValue, invertDirection } from '../utils/Direction';
 
-export class BFSPathfinder extends Pathfinder {
-  private discoveredTiles: Queue<Pair | null>;
+export class AStarPathfinder extends Pathfinder {
+  private discoveredTiles: Heap<AStarTile>;
 
   constructor() {
     super();
-    this.discoveredTiles = new Queue<Pair | null>();
+    this.discoveredTiles = new Heap<AStarTile>(AStarTile.score);
   }
 
   public reset(): void {
@@ -20,25 +20,21 @@ export class BFSPathfinder extends Pathfinder {
 
   protected initialization(): void {    
     if (this.gridModel == null) return;
-    const x: number = this.gridModel.getEntryTileX();
-    const y: number = this.gridModel.getEntryTileY();
-    this.discoveredTiles.enqueue(new Pair(x, y));
-    this.discoveredTiles.enqueue(null);
+    const xEntry: number = this.gridModel.getEntryTileX();
+    const yEntry: number = this.gridModel.getEntryTileY();
+    const xExit: number = this.gridModel.getExitTileX();
+    const yExit: number = this.gridModel.getExitTileY();
+    const distance: number = this.calculateDistance(xEntry, yEntry, xExit, yExit);
+    this.discoveredTiles.push(new AStarTile(xEntry, yEntry, 0, distance));
   }
 
   protected step(): void {
-    if (this.gridModel == null || this.discoveredTiles.size() <= 1) {
+    if (this.gridModel == null || this.discoveredTiles.isEmpty()) {
       this.running = false;
       return;
     }
 
-    let current: Pair | null = this.discoveredTiles.dequeue();
-    if (current == null) {
-      this.discoveredTiles.shuffle();
-      this.discoveredTiles.enqueue(null);
-      current = this.discoveredTiles.dequeue()!;
-    }
-
+    const current: AStarTile = this.discoveredTiles.pop()!;
     if (this.onstep != null) this.onstep(current.x, current.y, TileState.Visited, null);
 
     for (const direction of getDirections()) {
@@ -56,12 +52,34 @@ export class BFSPathfinder extends Pathfinder {
 
         if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType.Floor) {  
           const invertedDirection: Direction = invertDirection(direction);
-          this.discoveredTiles.enqueue(new Pair(current.x + d.x, current.y + d.y));
+          const xExit: number = this.gridModel.getExitTileX();
+          const yExit: number = this.gridModel.getExitTileY();
+          const distance: number = this.calculateDistance(current.x + d.x, current.y + d.y, xExit, yExit);
+          this.discoveredTiles.push(new AStarTile(current.x + d.x, current.y + d.y, current.gScore + 1, distance));
           if (this.onstep != null) {
             this.onstep(current.x + d.x, current.y + d.y, TileState.Discovered, invertedDirection);
           }
         }
       }
     }
+  }
+
+  private calculateDistance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+  }
+}
+
+class AStarTile extends Pair {
+  public gScore: number;
+  public fScore: number;
+
+  constructor(x: number, y: number, gScore: number, fScore: number) {
+    super(x, y);
+    this.gScore = gScore;
+    this.fScore = fScore;
+  }
+  
+  public static score(tile: AStarTile) {
+    return tile.gScore + tile.fScore;
   }
 }

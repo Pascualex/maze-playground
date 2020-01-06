@@ -9,14 +9,14 @@ export class Stack<T> {
     this.storage.length = 0;
   }
 
-  public push(value: T): void {
-    this.storage.push(value);
+  public push(element: T): void {
+    this.storage.push(element);
   }
 
   public pop(): T | null {
-    const value: T | undefined = this.storage.pop();
-    if (value == undefined) return null;
-    return value;
+    const element: T | undefined = this.storage.pop();
+    if (element == undefined) return null;
+    return element;
   }
 
   public size(): number {

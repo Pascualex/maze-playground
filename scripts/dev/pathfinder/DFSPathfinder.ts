@@ -1,5 +1,4 @@
 import { Pathfinder } from './Pathfinder';
-import { GridModel } from '../grid/GridModel';
 import { TileType } from '../utils/TileType';
 import { TileState } from '../utils/TileState';
 import { Stack } from '../utils/Stack';

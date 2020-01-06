@@ -95,7 +95,7 @@ var BFSMazeBuilder = /** @class */ (function (_super) {
 }(MazeBuilder_1.MazeBuilder));
 exports.BFSMazeBuilder = BFSMazeBuilder;
 
-},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Queue":18,"../utils/TileType":21,"./MazeBuilder":5}],2:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":18,"../utils/Queue":19,"../utils/TileType":22,"./MazeBuilder":4}],2:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -289,54 +289,7 @@ var DFSMazeBuilder = /** @class */ (function (_super) {
 }(MazeBuilder_1.MazeBuilder));
 exports.DFSMazeBuilder = DFSMazeBuilder;
 
-},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Stack":19,"../utils/TileType":21,"./MazeBuilder":5}],4:[function(require,module,exports){
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var Builder_1 = require("./Builder");
-var TileType_1 = require("../utils/TileType");
-var ForestBuilder = /** @class */ (function (_super) {
-    __extends(ForestBuilder, _super);
-    function ForestBuilder() {
-        return _super.call(this) || this;
-    }
-    ForestBuilder.prototype.reset = function () {
-        _super.prototype.reset.call(this);
-    };
-    ForestBuilder.prototype.initialization = function () {
-        if (this.gridModel == null)
-            return;
-        var width = this.gridModel.getWidth();
-        var height = this.gridModel.getHeight();
-        if (this.onstep != null)
-            this.onstep(0, 0, TileType_1.TileType.Entry);
-        if (this.onstep != null)
-            this.onstep(width - 1, height - 1, TileType_1.TileType.Exit);
-    };
-    ForestBuilder.prototype.step = function () {
-        if (this.gridModel == null) {
-            this.running = false;
-            return;
-        }
-        this.running = false;
-    };
-    return ForestBuilder;
-}(Builder_1.Builder));
-exports.ForestBuilder = ForestBuilder;
-
-},{"../utils/TileType":21,"./Builder":2}],5:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":18,"../utils/Stack":20,"../utils/TileType":22,"./MazeBuilder":4}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -442,7 +395,7 @@ var MazeBuilder = /** @class */ (function (_super) {
 }(Builder_1.Builder));
 exports.MazeBuilder = MazeBuilder;
 
-},{"../utils/TileType":21,"./Builder":2}],6:[function(require,module,exports){
+},{"../utils/TileType":22,"./Builder":2}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var List_1 = require("../utils/List");
@@ -550,7 +503,7 @@ var ControlBar = /** @class */ (function () {
 }());
 exports.ControlBar = ControlBar;
 
-},{"../utils/List":16}],7:[function(require,module,exports){
+},{"../utils/List":17}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var GridModel_1 = require("./GridModel");
@@ -770,7 +723,7 @@ var Grid = /** @class */ (function () {
 }());
 exports.Grid = Grid;
 
-},{"../utils/Constants":14,"../utils/TileType":21,"./GridModel":8,"./GridView":9}],8:[function(require,module,exports){
+},{"../utils/Constants":14,"../utils/TileType":22,"./GridModel":7,"./GridView":8}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
@@ -933,7 +886,7 @@ var GridModel = /** @class */ (function () {
 }());
 exports.GridModel = GridModel;
 
-},{"../utils/Direction":15,"../utils/TileState":20,"../utils/TileType":21}],9:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/TileState":21,"../utils/TileType":22}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType_1 = require("../utils/TileType");
@@ -1303,7 +1256,7 @@ var GridView = /** @class */ (function () {
 }());
 exports.GridView = GridView;
 
-},{"../utils/Constants":14,"../utils/Direction":15,"../utils/Pair":17,"../utils/TileState":20,"../utils/TileType":21}],10:[function(require,module,exports){
+},{"../utils/Constants":14,"../utils/Direction":15,"../utils/Pair":18,"../utils/TileState":21,"../utils/TileType":22}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Grid_1 = require("./grid/Grid");
@@ -1312,7 +1265,7 @@ var BFSPathfinder_1 = require("./pathfinder/BFSPathfinder");
 var DFSPathfinder_1 = require("./pathfinder/DFSPathfinder");
 var DFSMazeBuilder_1 = require("./builder/DFSMazeBuilder");
 var BFSMazeBuilder_1 = require("./builder/BFSMazeBuilder");
-var ForestBuilder_1 = require("./builder/ForestBuilder");
+var AStarPathfinder_1 = require("./pathfinder/AStarPathfinder");
 var grid;
 var controlBar;
 var htmlGrid;
@@ -1380,9 +1333,9 @@ function createControlBar() {
     controlBar = new ControlBar_1.ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, resetButton);
     controlBar.addBuilder('DFS (Maze)', new DFSMazeBuilder_1.DFSMazeBuilder());
     controlBar.addBuilder('BFS (Maze)', new BFSMazeBuilder_1.BFSMazeBuilder());
-    controlBar.addBuilder('Forest builder', new ForestBuilder_1.ForestBuilder());
     controlBar.addPathfinder('BFS', new BFSPathfinder_1.BFSPathfinder());
     controlBar.addPathfinder('DFS', new DFSPathfinder_1.DFSPathfinder());
+    controlBar.addPathfinder('A*', new AStarPathfinder_1.AStarPathfinder());
 }
 function handleOnBuilderChangeEvent(builder) {
     if (grid != null)
@@ -1494,7 +1447,104 @@ function setupTouchEvents() {
     }
 }
 
-},{"./builder/BFSMazeBuilder":1,"./builder/DFSMazeBuilder":3,"./builder/ForestBuilder":4,"./controlbar/ControlBar":6,"./grid/Grid":7,"./pathfinder/BFSPathfinder":11,"./pathfinder/DFSPathfinder":12}],11:[function(require,module,exports){
+},{"./builder/BFSMazeBuilder":1,"./builder/DFSMazeBuilder":3,"./controlbar/ControlBar":5,"./grid/Grid":6,"./pathfinder/AStarPathfinder":10,"./pathfinder/BFSPathfinder":11,"./pathfinder/DFSPathfinder":12}],10:[function(require,module,exports){
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var Pathfinder_1 = require("./Pathfinder");
+var TileType_1 = require("../utils/TileType");
+var TileState_1 = require("../utils/TileState");
+var Heap_1 = require("../utils/Heap");
+var Pair_1 = require("../utils/Pair");
+var Direction_1 = require("../utils/Direction");
+var AStarPathfinder = /** @class */ (function (_super) {
+    __extends(AStarPathfinder, _super);
+    function AStarPathfinder() {
+        var _this = _super.call(this) || this;
+        _this.discoveredTiles = new Heap_1.Heap(AStarTile.score);
+        return _this;
+    }
+    AStarPathfinder.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+        this.discoveredTiles.clear();
+    };
+    AStarPathfinder.prototype.initialization = function () {
+        if (this.gridModel == null)
+            return;
+        var xEntry = this.gridModel.getEntryTileX();
+        var yEntry = this.gridModel.getEntryTileY();
+        var xExit = this.gridModel.getExitTileX();
+        var yExit = this.gridModel.getExitTileY();
+        var distance = this.calculateDistance(xEntry, yEntry, xExit, yExit);
+        this.discoveredTiles.push(new AStarTile(xEntry, yEntry, 0, distance));
+    };
+    AStarPathfinder.prototype.step = function () {
+        if (this.gridModel == null || this.discoveredTiles.isEmpty()) {
+            this.running = false;
+            return;
+        }
+        var current = this.discoveredTiles.pop();
+        if (this.onstep != null)
+            this.onstep(current.x, current.y, TileState_1.TileState.Visited, null);
+        for (var _i = 0, _a = Direction_1.getDirections(); _i < _a.length; _i++) {
+            var direction = _a[_i];
+            var d = Direction_1.getDirectionValue(direction);
+            if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState_1.TileState.Undiscovered) {
+                if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Exit) {
+                    var invertedDirection = Direction_1.invertDirection(direction);
+                    this.exitFound = true;
+                    this.pathX = current.x + d.x;
+                    this.pathY = current.y + d.y;
+                    if (this.onstep != null) {
+                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                    }
+                }
+                if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Floor) {
+                    var invertedDirection = Direction_1.invertDirection(direction);
+                    var xExit = this.gridModel.getExitTileX();
+                    var yExit = this.gridModel.getExitTileY();
+                    var distance = this.calculateDistance(current.x + d.x, current.y + d.y, xExit, yExit);
+                    this.discoveredTiles.push(new AStarTile(current.x + d.x, current.y + d.y, current.gScore + 1, distance));
+                    if (this.onstep != null) {
+                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                    }
+                }
+            }
+        }
+    };
+    AStarPathfinder.prototype.calculateDistance = function (x1, y1, x2, y2) {
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+    };
+    return AStarPathfinder;
+}(Pathfinder_1.Pathfinder));
+exports.AStarPathfinder = AStarPathfinder;
+var AStarTile = /** @class */ (function (_super) {
+    __extends(AStarTile, _super);
+    function AStarTile(x, y, gScore, fScore) {
+        var _this = _super.call(this, x, y) || this;
+        _this.gScore = gScore;
+        _this.fScore = fScore;
+        return _this;
+    }
+    AStarTile.score = function (tile) {
+        return tile.gScore + tile.fScore;
+    };
+    return AStarTile;
+}(Pair_1.Pair));
+
+},{"../utils/Direction":15,"../utils/Heap":16,"../utils/Pair":18,"../utils/TileState":21,"../utils/TileType":22,"./Pathfinder":13}],11:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1521,7 +1571,6 @@ var BFSPathfinder = /** @class */ (function (_super) {
     function BFSPathfinder() {
         var _this = _super.call(this) || this;
         _this.discoveredTiles = new Queue_1.Queue();
-        _this.reset();
         return _this;
     }
     BFSPathfinder.prototype.reset = function () {
@@ -1576,7 +1625,7 @@ var BFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.BFSPathfinder = BFSPathfinder;
 
-},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Queue":18,"../utils/TileState":20,"../utils/TileType":21,"./Pathfinder":13}],12:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":18,"../utils/Queue":19,"../utils/TileState":21,"../utils/TileType":22,"./Pathfinder":13}],12:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -1652,7 +1701,7 @@ var DFSPathfinder = /** @class */ (function (_super) {
 }(Pathfinder_1.Pathfinder));
 exports.DFSPathfinder = DFSPathfinder;
 
-},{"../utils/Direction":15,"../utils/Pair":17,"../utils/Stack":19,"../utils/TileState":20,"../utils/TileType":21,"./Pathfinder":13}],13:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/Pair":18,"../utils/Stack":20,"../utils/TileState":21,"../utils/TileType":22,"./Pathfinder":13}],13:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1774,7 +1823,7 @@ var Pathfinder = /** @class */ (function () {
 }());
 exports.Pathfinder = Pathfinder;
 
-},{"../utils/Direction":15,"../utils/TileState":20,"../utils/TileType":21}],14:[function(require,module,exports){
+},{"../utils/Direction":15,"../utils/TileState":21,"../utils/TileType":22}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Constants;
@@ -1880,7 +1929,86 @@ function shuffle(array) {
     return array;
 }
 
-},{"./Pair":17}],16:[function(require,module,exports){
+},{"./Pair":18}],16:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Heap = /** @class */ (function () {
+    function Heap(scoreFunction) {
+        this.storage = [];
+        this.scoreFunction = scoreFunction;
+    }
+    Heap.prototype.push = function (element) {
+        this.storage.push(element);
+        this.bubbleUp(this.storage.length - 1);
+    };
+    Heap.prototype.pop = function () {
+        var result = this.storage[0];
+        var end = this.storage.pop();
+        if (end == undefined)
+            return null;
+        if (this.storage.length > 0) {
+            this.storage[0] = end;
+            this.sinkDown(0);
+        }
+        return result;
+    };
+    Heap.prototype.size = function () {
+        return this.storage.length;
+    };
+    Heap.prototype.isEmpty = function () {
+        return this.storage.length == 0;
+    };
+    Heap.prototype.clear = function () {
+        this.storage.length = 0;
+    };
+    Heap.prototype.bubbleUp = function (index) {
+        var element = this.storage[index];
+        var score = this.scoreFunction(element);
+        while (index > 0) {
+            var parentIndex = Math.floor((index + 1) / 2) - 1;
+            var parent_1 = this.storage[parentIndex];
+            if (score >= this.scoreFunction(parent_1))
+                break;
+            this.storage[parentIndex] = element;
+            this.storage[index] = parent_1;
+            index = parentIndex;
+        }
+    };
+    Heap.prototype.sinkDown = function (index) {
+        var length = this.storage.length;
+        var element = this.storage[index];
+        var elementScore = this.scoreFunction(element);
+        var swap = null;
+        do {
+            var child2Index = (index + 1) * 2;
+            var child1Index = child2Index - 1;
+            swap = null;
+            var child1Score = null;
+            if (child1Index < length) {
+                var child1 = this.storage[child1Index];
+                child1Score = this.scoreFunction(child1);
+                if (child1Score < elementScore)
+                    swap = child1Index;
+            }
+            if (child2Index < length) {
+                var child2 = this.storage[child2Index];
+                var child2Score = this.scoreFunction(child2);
+                if (child2Score < (child1Score == null ? elementScore : child1Score)) {
+                    swap = child2Index;
+                }
+            }
+            if (swap != null) {
+                this.storage[index] = this.storage[swap];
+                this.storage[swap] = element;
+                index = swap;
+            }
+        } while (swap != null);
+    };
+    return Heap;
+}());
+exports.Heap = Heap;
+
+},{}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var List = /** @class */ (function () {
@@ -1908,7 +2036,7 @@ var List = /** @class */ (function () {
 }());
 exports.List = List;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Pair = /** @class */ (function () {
@@ -1920,7 +2048,7 @@ var Pair = /** @class */ (function () {
 }());
 exports.Pair = Pair;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Queue = /** @class */ (function () {
@@ -1930,14 +2058,14 @@ var Queue = /** @class */ (function () {
     Queue.prototype.clear = function () {
         this.storage.length = 0;
     };
-    Queue.prototype.enqueue = function (value) {
-        this.storage.push(value);
+    Queue.prototype.enqueue = function (element) {
+        this.storage.push(element);
     };
     Queue.prototype.dequeue = function () {
-        var value = this.storage.shift();
-        if (value == undefined)
+        var element = this.storage.shift();
+        if (element == undefined)
             return null;
-        return value;
+        return element;
     };
     Queue.prototype.size = function () {
         return this.storage.length;
@@ -1959,7 +2087,7 @@ var Queue = /** @class */ (function () {
 }());
 exports.Queue = Queue;
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Stack = /** @class */ (function () {
@@ -1969,14 +2097,14 @@ var Stack = /** @class */ (function () {
     Stack.prototype.clear = function () {
         this.storage.length = 0;
     };
-    Stack.prototype.push = function (value) {
-        this.storage.push(value);
+    Stack.prototype.push = function (element) {
+        this.storage.push(element);
     };
     Stack.prototype.pop = function () {
-        var value = this.storage.pop();
-        if (value == undefined)
+        var element = this.storage.pop();
+        if (element == undefined)
             return null;
-        return value;
+        return element;
     };
     Stack.prototype.size = function () {
         return this.storage.length;
@@ -1988,7 +2116,7 @@ var Stack = /** @class */ (function () {
 }());
 exports.Stack = Stack;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileState;
@@ -1999,7 +2127,7 @@ var TileState;
     TileState[TileState["Path"] = 3] = "Path";
 })(TileState = exports.TileState || (exports.TileState = {}));
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TileType;
@@ -2010,4 +2138,4 @@ var TileType;
     TileType[TileType["Exit"] = 3] = "Exit";
 })(TileType = exports.TileType || (exports.TileType = {}));
 
-},{}]},{},[10]);
+},{}]},{},[9]);
