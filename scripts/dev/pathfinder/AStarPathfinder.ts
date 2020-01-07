@@ -10,7 +10,7 @@ export class AStarPathfinder extends Pathfinder {
 
   constructor() {
     super();
-    this.discoveredTiles = new Heap<AStarTile>(AStarTile.score);
+    this.discoveredTiles = new Heap<AStarTile>();
   }
 
   public reset(): void {
@@ -79,7 +79,11 @@ class AStarTile extends Pair {
     this.fScore = fScore;
   }
   
-  public static score(tile: AStarTile) {
-    return tile.gScore + tile.fScore;
+  public compare(other: AStarTile): number {
+    if ((this.gScore + this.fScore) != (other.gScore + other.fScore)) {
+      return (this.gScore + this.fScore) - (other.gScore + other.fScore);
+    } else {
+      return this.fScore - other.fScore;
+    }
   }
 }

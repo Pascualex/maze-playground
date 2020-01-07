@@ -1,10 +1,8 @@
-export class Heap<T> {
+export class Heap<T extends HeapElement> {
   private storage: T[];
-  private scoreFunction: ((x: T) => number);
 
-  constructor(scoreFunction: ((x: T) => number)) {
+  constructor() {
     this.storage = [];
-    this.scoreFunction = scoreFunction;
   }
 
   public push(element: T): void {
@@ -37,11 +35,10 @@ export class Heap<T> {
 
   private bubbleUp(index: number) {
     const element: T = this.storage[index];
-    const score: number = this.scoreFunction(element);
     while (index > 0) {
       const parentIndex = Math.floor((index + 1) / 2) - 1;
       const parent = this.storage[parentIndex];
-      if (score >= this.scoreFunction(parent)) break;
+      if (element.compare(parent) >= 0) break;
       this.storage[parentIndex] = element;
       this.storage[index] = parent;
       index = parentIndex;
@@ -51,24 +48,21 @@ export class Heap<T> {
   private sinkDown(index: number) {
     const length: number = this.storage.length;
     const element: T = this.storage[index];
-    const elementScore: number = this.scoreFunction(element);
     let swap: number | null = null;
     do {
       const child2Index: number = (index + 1) * 2;
       const child1Index: number = child2Index - 1;
+      let child1: T | null = null;
       swap = null;
-      let child1Score: number | null = null;
 
       if (child1Index < length) {
-        const child1: T = this.storage[child1Index];
-        child1Score = this.scoreFunction(child1);
-        if (child1Score < elementScore) swap = child1Index;
+        child1 = this.storage[child1Index];
+        if (child1.compare(element) < 0) swap = child1Index;
       }
 
       if (child2Index < length) {
         const child2: T = this.storage[child2Index];
-        const child2Score: number = this.scoreFunction(child2);
-        if (child2Score < (child1Score == null ? elementScore : child1Score)) {
+        if (child2.compare(child1 == null ? element : child1) < 0) {
           swap = child2Index;
         }
       }
@@ -81,3 +75,7 @@ export class Heap<T> {
     } while (swap != null);
   }
 } 
+
+abstract class HeapElement {
+  public abstract compare(other: HeapElement): number;
+}

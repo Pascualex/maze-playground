@@ -1473,7 +1473,7 @@ var AStarPathfinder = /** @class */ (function (_super) {
     __extends(AStarPathfinder, _super);
     function AStarPathfinder() {
         var _this = _super.call(this) || this;
-        _this.discoveredTiles = new Heap_1.Heap(AStarTile.score);
+        _this.discoveredTiles = new Heap_1.Heap();
         return _this;
     }
     AStarPathfinder.prototype.reset = function () {
@@ -1538,8 +1538,13 @@ var AStarTile = /** @class */ (function (_super) {
         _this.fScore = fScore;
         return _this;
     }
-    AStarTile.score = function (tile) {
-        return tile.gScore + tile.fScore;
+    AStarTile.prototype.compare = function (other) {
+        if ((this.gScore + this.fScore) != (other.gScore + other.fScore)) {
+            return (this.gScore + this.fScore) - (other.gScore + other.fScore);
+        }
+        else {
+            return this.fScore - other.fScore;
+        }
     };
     return AStarTile;
 }(Pair_1.Pair));
@@ -1933,9 +1938,8 @@ function shuffle(array) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Heap = /** @class */ (function () {
-    function Heap(scoreFunction) {
+    function Heap() {
         this.storage = [];
-        this.scoreFunction = scoreFunction;
     }
     Heap.prototype.push = function (element) {
         this.storage.push(element);
@@ -1963,11 +1967,10 @@ var Heap = /** @class */ (function () {
     };
     Heap.prototype.bubbleUp = function (index) {
         var element = this.storage[index];
-        var score = this.scoreFunction(element);
         while (index > 0) {
             var parentIndex = Math.floor((index + 1) / 2) - 1;
             var parent_1 = this.storage[parentIndex];
-            if (score >= this.scoreFunction(parent_1))
+            if (element.compare(parent_1) >= 0)
                 break;
             this.storage[parentIndex] = element;
             this.storage[index] = parent_1;
@@ -1977,23 +1980,20 @@ var Heap = /** @class */ (function () {
     Heap.prototype.sinkDown = function (index) {
         var length = this.storage.length;
         var element = this.storage[index];
-        var elementScore = this.scoreFunction(element);
         var swap = null;
         do {
             var child2Index = (index + 1) * 2;
             var child1Index = child2Index - 1;
+            var child1 = null;
             swap = null;
-            var child1Score = null;
             if (child1Index < length) {
-                var child1 = this.storage[child1Index];
-                child1Score = this.scoreFunction(child1);
-                if (child1Score < elementScore)
+                child1 = this.storage[child1Index];
+                if (child1.compare(element) < 0)
                     swap = child1Index;
             }
             if (child2Index < length) {
                 var child2 = this.storage[child2Index];
-                var child2Score = this.scoreFunction(child2);
-                if (child2Score < (child1Score == null ? elementScore : child1Score)) {
+                if (child2.compare(child1 == null ? element : child1) < 0) {
                     swap = child2Index;
                 }
             }
@@ -2007,6 +2007,11 @@ var Heap = /** @class */ (function () {
     return Heap;
 }());
 exports.Heap = Heap;
+var HeapElement = /** @class */ (function () {
+    function HeapElement() {
+    }
+    return HeapElement;
+}());
 
 },{}],17:[function(require,module,exports){
 "use strict";
