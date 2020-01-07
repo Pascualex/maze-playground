@@ -18,9 +18,7 @@ export class BFSMazeBuilder extends MazeBuilder {
   public reset(): void {
     super.reset();
 
-    if (this.gridModel == null) {
-      return;
-    }
+    if (this.gridModel == null) return;
 
     this.tiles = new Array<boolean[]>(this.height);
     this.directions = new Array<Direction[]>(this.height);

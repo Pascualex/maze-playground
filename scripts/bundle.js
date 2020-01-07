@@ -28,9 +28,8 @@ var BFSMazeBuilder = /** @class */ (function (_super) {
     }
     BFSMazeBuilder.prototype.reset = function () {
         _super.prototype.reset.call(this);
-        if (this.gridModel == null) {
+        if (this.gridModel == null)
             return;
-        }
         this.tiles = new Array(this.height);
         this.directions = new Array(this.height);
         for (var i = 0; i < this.height; i++) {
@@ -222,9 +221,8 @@ var DFSMazeBuilder = /** @class */ (function (_super) {
     }
     DFSMazeBuilder.prototype.reset = function () {
         _super.prototype.reset.call(this);
-        if (this.gridModel == null) {
+        if (this.gridModel == null)
             return;
-        }
         this.tiles = new Array(this.height);
         this.directions = new Array(this.height);
         for (var i = 0; i < this.height; i++) {
@@ -1478,11 +1476,28 @@ var AStarPathfinder = /** @class */ (function (_super) {
     }
     AStarPathfinder.prototype.reset = function () {
         _super.prototype.reset.call(this);
+        if (this.gridModel == null)
+            return;
+        var width = this.gridModel.getWidth();
+        var height = this.gridModel.getHeight();
+        this.scores = new Array(height);
+        for (var i = 0; i < height; i++) {
+            this.scores[i] = new Array(width);
+        }
         this.discoveredTiles.clear();
     };
     AStarPathfinder.prototype.initialization = function () {
         if (this.gridModel == null)
             return;
+        if (this.gridModel == null)
+            return;
+        var width = this.gridModel.getWidth();
+        var height = this.gridModel.getHeight();
+        for (var i = 0; i < height; i++) {
+            for (var j = 0; j < width; j++) {
+                this.scores[i][j] = null;
+            }
+        }
         var xEntry = this.gridModel.getEntryTileX();
         var yEntry = this.gridModel.getEntryTileY();
         var xExit = this.gridModel.getExitTileX();
@@ -1496,12 +1511,21 @@ var AStarPathfinder = /** @class */ (function (_super) {
             return;
         }
         var current = this.discoveredTiles.pop();
+        var currentState = this.gridModel.getStateAt(current.x, current.y);
+        while (currentState == TileState_1.TileState.Visited) {
+            if (this.discoveredTiles.isEmpty()) {
+                this.running = false;
+                return;
+            }
+            current = this.discoveredTiles.pop();
+            currentState = this.gridModel.getStateAt(current.x, current.y);
+        }
         if (this.onstep != null)
             this.onstep(current.x, current.y, TileState_1.TileState.Visited, null);
         for (var _i = 0, _a = Direction_1.getDirections(); _i < _a.length; _i++) {
             var direction = _a[_i];
             var d = Direction_1.getDirectionValue(direction);
-            if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState_1.TileState.Undiscovered) {
+            if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) != TileState_1.TileState.Visited) {
                 if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType_1.TileType.Exit) {
                     var invertedDirection = Direction_1.invertDirection(direction);
                     this.exitFound = true;
@@ -1516,9 +1540,14 @@ var AStarPathfinder = /** @class */ (function (_super) {
                     var xExit = this.gridModel.getExitTileX();
                     var yExit = this.gridModel.getExitTileY();
                     var distance = this.calculateDistance(current.x + d.x, current.y + d.y, xExit, yExit);
-                    this.discoveredTiles.push(new AStarTile(current.x + d.x, current.y + d.y, current.gScore + 1, distance));
-                    if (this.onstep != null) {
-                        this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                    var score = (current.gScore + 1) + distance;
+                    var previousScore = this.scores[current.y + d.y][current.x + d.x];
+                    if (previousScore == null || score < previousScore) {
+                        this.discoveredTiles.push(new AStarTile(current.x + d.x, current.y + d.y, current.gScore + 1, distance));
+                        this.scores[current.y + d.y][current.x + d.x] = score;
+                        if (this.onstep != null) {
+                            this.onstep(current.x + d.x, current.y + d.y, TileState_1.TileState.Discovered, invertedDirection);
+                        }
                     }
                 }
             }

@@ -6,6 +6,7 @@ import { Pair } from '../utils/Pair';
 import { Direction, getDirections, getDirectionValue, invertDirection } from '../utils/Direction';
 
 export class AStarPathfinder extends Pathfinder {
+  private scores!: (number | null)[][];
   private discoveredTiles: Heap<AStarTile>;
 
   constructor() {
@@ -15,11 +16,33 @@ export class AStarPathfinder extends Pathfinder {
 
   public reset(): void {
     super.reset();
+
+    if (this.gridModel == null) return;
+
+    const width: number = this.gridModel.getWidth();
+    const height: number = this.gridModel.getHeight();
+
+    this.scores = new Array<Direction[]>(height);
+    for (let i = 0; i < height; i++) {
+      this.scores[i] = new Array<number>(width);
+    }
     this.discoveredTiles.clear();
   }
 
   protected initialization(): void {    
     if (this.gridModel == null) return;
+
+    if (this.gridModel == null) return;
+
+    const width: number = this.gridModel.getWidth();
+    const height: number = this.gridModel.getHeight();
+
+    for (let i = 0; i < height; i++) {
+      for (let j = 0; j < width; j++) {
+        this.scores[i][j] = null;
+      }
+    }
+
     const xEntry: number = this.gridModel.getEntryTileX();
     const yEntry: number = this.gridModel.getEntryTileY();
     const xExit: number = this.gridModel.getExitTileX();
@@ -34,12 +57,24 @@ export class AStarPathfinder extends Pathfinder {
       return;
     }
 
-    const current: AStarTile = this.discoveredTiles.pop()!;
+    
+    let current: AStarTile = this.discoveredTiles.pop()!;
+    let currentState: TileState = this.gridModel.getStateAt(current.x, current.y)!;
+    while (currentState == TileState.Visited) {
+      if (this.discoveredTiles.isEmpty()) {
+        this.running = false;
+        return
+      }
+
+      current = this.discoveredTiles.pop()!;
+      currentState = this.gridModel.getStateAt(current.x, current.y)!;
+    }
+
     if (this.onstep != null) this.onstep(current.x, current.y, TileState.Visited, null);
 
     for (const direction of getDirections()) {
       const d: Pair = getDirectionValue(direction);
-      if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) == TileState.Undiscovered) {
+      if (this.gridModel.getStateAt(current.x + d.x, current.y + d.y) != TileState.Visited) {
         if (this.gridModel.getTypeAt(current.x + d.x, current.y + d.y) == TileType.Exit) {
           const invertedDirection: Direction = invertDirection(direction);
           this.exitFound = true;
@@ -55,9 +90,14 @@ export class AStarPathfinder extends Pathfinder {
           const xExit: number = this.gridModel.getExitTileX();
           const yExit: number = this.gridModel.getExitTileY();
           const distance: number = this.calculateDistance(current.x + d.x, current.y + d.y, xExit, yExit);
-          this.discoveredTiles.push(new AStarTile(current.x + d.x, current.y + d.y, current.gScore + 1, distance));
-          if (this.onstep != null) {
-            this.onstep(current.x + d.x, current.y + d.y, TileState.Discovered, invertedDirection);
+          const score: number = (current.gScore + 1) + distance;
+          const previousScore: number | null = this.scores[current.y + d.y][current.x + d.x];
+          if (previousScore == null || score < previousScore) {
+            this.discoveredTiles.push(new AStarTile(current.x + d.x, current.y + d.y, current.gScore + 1, distance));
+            this.scores[current.y + d.y][current.x + d.x] = score;
+            if (this.onstep != null) {
+              this.onstep(current.x + d.x, current.y + d.y, TileState.Discovered, invertedDirection);
+            }
           }
         }
       }
