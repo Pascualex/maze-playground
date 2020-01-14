@@ -7,6 +7,7 @@ export class ControlBar {
   private generateButton: HTMLAnchorElement;
   private pathfinderSelect: HTMLSelectElement;
   private findButton: HTMLAnchorElement;
+  private speedSlider: HTMLInputElement;
   private resetButton: HTMLAnchorElement;
 
   private builders: List<Builder>;
@@ -16,6 +17,7 @@ export class ControlBar {
   public ongenerate: (() => any) | null;
   public onpathfinderchange: ((pathfinder: Pathfinder) => any) | null;
   public onfind: (() => any) | null;
+  public onspeedchange: ((speed: number) => any) | null;
   public onreset: (() => any) | null;
 
   constructor(
@@ -23,12 +25,14 @@ export class ControlBar {
     generateButton: HTMLAnchorElement,
     pathfinderSelect: HTMLSelectElement,
     findButton: HTMLAnchorElement,
+    speedSlider: HTMLInputElement,
     resetButton: HTMLAnchorElement
   ) {
     this.builderSelect = builderSelect;
     this.generateButton = generateButton;
     this.pathfinderSelect = pathfinderSelect;
     this.findButton = findButton;
+    this.speedSlider = speedSlider;
     this.resetButton = resetButton;
 
     this.builders = new List<Builder>();
@@ -38,6 +42,7 @@ export class ControlBar {
     this.ongenerate = null;
     this.onpathfinderchange = null;
     this.onfind = null;
+    this.onspeedchange = null;
     this.onreset = null;
 
     this.setupEvents();
@@ -55,6 +60,9 @@ export class ControlBar {
     };
     this.findButton.onclick = () => {
       this.handleOnFindButtonClickEvent();
+    };
+    this.speedSlider.onchange = () => {
+      this.handleOnSpeedChangeEvent();
     };
     this.resetButton.onclick = () => {
       this.handleOnResetButtonClickEvent();
@@ -101,6 +109,10 @@ export class ControlBar {
     this.triggerOnFindEvent();
   }
 
+  private handleOnSpeedChangeEvent(): void {
+    this.triggerOnSpeedChangeEvent();
+  }
+
   private handleOnResetButtonClickEvent(): void {
     this.triggerOnResetEvent();
   }
@@ -127,6 +139,12 @@ export class ControlBar {
   private triggerOnFindEvent(): void {
     if (this.onfind == null) return;
     this.onfind();
+  }
+
+  private triggerOnSpeedChangeEvent(): void {
+    if (this.onspeedchange == null) return;
+    const speed: number = parseFloat(this.speedSlider.value);
+    this.onspeedchange(speed);
   }
 
   private triggerOnResetEvent(): void {

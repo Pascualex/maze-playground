@@ -23,6 +23,10 @@ export abstract class Builder {
     this.reset();
   }
 
+  public setStepDelay(stepDelay: number): void {
+    this.stepDelay = stepDelay;
+  }
+
   public reset(): void {
     this.running = false;
     this.unactivated = true;

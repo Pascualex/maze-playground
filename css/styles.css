@@ -136,6 +136,24 @@ select {
   justify-content: space-around;
 }
 
+#speed-slider {
+  appearance: none;
+  width: 150px;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  background-color: #ebebeb;
+}
+
+#speed-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #6da6b3;
+  cursor: pointer;
+  border: none;
+  border-radius: 50%;
+}
+
 @media screen and (min-resolution: 2dppx) {
   body {
     font-size: 40px;

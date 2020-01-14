@@ -16,6 +16,7 @@ let builderSelect : HTMLElement | null;
 let generateButton : HTMLElement | null;
 let pathfinderSelect : HTMLElement | null;
 let findButton : HTMLElement | null;
+let speedSlider : HTMLElement | null;
 let resetButton : HTMLElement | null;
 let resizeMessage : HTMLElement | null;
 
@@ -66,6 +67,7 @@ function createControlBar(): void {
   if (!(generateButton instanceof HTMLAnchorElement)) return;
   if (!(pathfinderSelect instanceof HTMLSelectElement)) return;
   if (!(findButton instanceof HTMLAnchorElement)) return;
+  if (!(speedSlider instanceof HTMLInputElement)) return;
   if (!(resetButton instanceof HTMLAnchorElement)) return;
 
   controlBar = new ControlBar(
@@ -73,6 +75,7 @@ function createControlBar(): void {
     generateButton,
     pathfinderSelect,
     findButton,
+    speedSlider,
     resetButton
   );
 
@@ -98,6 +101,11 @@ function handleOnPathfinderChangeEvent(pathfinder: Pathfinder): void {
 
 function handleOnFindEvent(): void {
   if (grid != null) grid.runPathfinder();
+}
+
+function handleOnSpeedChange(speed: number): void {
+  const stepDelay: number = Math.pow(50 - speed, 2);
+  if (grid != null) grid.setStepDelay(stepDelay);
 }
 
 function handleOnResetEvent(): void {
@@ -127,6 +135,7 @@ function setupHtmlElements(): void {
   generateButton = document.getElementById('generate-button');
   pathfinderSelect = document.getElementById('pathfinder-select');
   findButton = document.getElementById('find-button');
+  speedSlider = document.getElementById('speed-slider');
   resetButton = document.getElementById('reset-button');
   resizeMessage = document.getElementById('resize-message');
   const resizeMessageYes = document.getElementById('resize-message-yes');
@@ -155,6 +164,9 @@ function setupControlBarEvents(): void {
   };
   controlBar.onfind = () => {
     handleOnFindEvent();
+  };
+  controlBar.onspeedchange = (speed: number) => {
+    handleOnSpeedChange(speed);
   };
   controlBar.onreset = () => {
     handleOnResetEvent();

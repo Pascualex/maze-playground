@@ -14,6 +14,7 @@ export class Grid {
   private pathfinder: Pathfinder | null;
   private builder: Builder | null;
   private currentTileType: TileType;
+  private stepDelay: number;
 
   constructor(htmlCanvas: HTMLCanvasElement, scale: number) {
     this.htmlCanvas = htmlCanvas;
@@ -26,8 +27,8 @@ export class Grid {
     this.gridView = new GridView(htmlCanvas, scale, this.gridModel);
     this.pathfinder = null;
     this.builder = null;
-
     this.currentTileType = TileType.Floor;
+    this.stepDelay = 50;
 
     this.setupEvents();
 
@@ -64,6 +65,7 @@ export class Grid {
 
     this.pathfinder = pathfinder;
     this.pathfinder.setGridModel(this.gridModel);
+    this.pathfinder.setStepDelay(this.stepDelay);
     this.setupPathfinderEvents();
   }
 
@@ -90,6 +92,7 @@ export class Grid {
 
     this.builder = builder;
     this.builder.setGridModel(this.gridModel);
+    this.builder.setStepDelay(this.stepDelay);
     this.setupBuilderEvents();
   }
 
@@ -108,6 +111,12 @@ export class Grid {
     this.gridModel.resetTiles();
     this.gridView.draw();
     this.builder.run();
+  }
+
+  public setStepDelay(stepDelay: number): void {
+    this.stepDelay = stepDelay;
+    if (this.builder != null) this.builder.setStepDelay(stepDelay);
+    if (this.pathfinder != null) this.pathfinder.setStepDelay(stepDelay);
   }
 
   private setupEvents(): void {

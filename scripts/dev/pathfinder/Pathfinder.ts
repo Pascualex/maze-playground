@@ -21,7 +21,7 @@ export abstract class Pathfinder {
     this.running = false;
     this.exitFound = false;
     this.runningId = 0;
-    this.stepDelay = 50;
+    this.stepDelay = 0;
     this.unactivated = true;
     this.onstep = null;
     this.onpathstep = null;
@@ -30,6 +30,10 @@ export abstract class Pathfinder {
   public setGridModel(gridModel: GridModel): void {
     this.gridModel = gridModel;
     this.reset();
+  }
+
+  public setStepDelay(stepDelay: number): void {
+    this.stepDelay = stepDelay;
   }
 
   public reset(): void {

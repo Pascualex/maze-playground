@@ -146,6 +146,9 @@ var Builder = /** @class */ (function () {
         this.gridModel = gridModel;
         this.reset();
     };
+    Builder.prototype.setStepDelay = function (stepDelay) {
+        this.stepDelay = stepDelay;
+    };
     Builder.prototype.reset = function () {
         this.running = false;
         this.unactivated = true;
@@ -398,11 +401,12 @@ exports.MazeBuilder = MazeBuilder;
 Object.defineProperty(exports, "__esModule", { value: true });
 var List_1 = require("../utils/List");
 var ControlBar = /** @class */ (function () {
-    function ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, resetButton) {
+    function ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, speedSlider, resetButton) {
         this.builderSelect = builderSelect;
         this.generateButton = generateButton;
         this.pathfinderSelect = pathfinderSelect;
         this.findButton = findButton;
+        this.speedSlider = speedSlider;
         this.resetButton = resetButton;
         this.builders = new List_1.List();
         this.pathfinders = new List_1.List();
@@ -410,6 +414,7 @@ var ControlBar = /** @class */ (function () {
         this.ongenerate = null;
         this.onpathfinderchange = null;
         this.onfind = null;
+        this.onspeedchange = null;
         this.onreset = null;
         this.setupEvents();
     }
@@ -426,6 +431,9 @@ var ControlBar = /** @class */ (function () {
         };
         this.findButton.onclick = function () {
             _this.handleOnFindButtonClickEvent();
+        };
+        this.speedSlider.onchange = function () {
+            _this.handleOnSpeedChangeEvent();
         };
         this.resetButton.onclick = function () {
             _this.handleOnResetButtonClickEvent();
@@ -463,6 +471,9 @@ var ControlBar = /** @class */ (function () {
     ControlBar.prototype.handleOnFindButtonClickEvent = function () {
         this.triggerOnFindEvent();
     };
+    ControlBar.prototype.handleOnSpeedChangeEvent = function () {
+        this.triggerOnSpeedChangeEvent();
+    };
     ControlBar.prototype.handleOnResetButtonClickEvent = function () {
         this.triggerOnResetEvent();
     };
@@ -492,6 +503,12 @@ var ControlBar = /** @class */ (function () {
             return;
         this.onfind();
     };
+    ControlBar.prototype.triggerOnSpeedChangeEvent = function () {
+        if (this.onspeedchange == null)
+            return;
+        var speed = parseFloat(this.speedSlider.value);
+        this.onspeedchange(speed);
+    };
     ControlBar.prototype.triggerOnResetEvent = function () {
         if (this.onreset == null)
             return;
@@ -519,6 +536,7 @@ var Grid = /** @class */ (function () {
         this.pathfinder = null;
         this.builder = null;
         this.currentTileType = TileType_1.TileType.Floor;
+        this.stepDelay = 50;
         this.setupEvents();
         this.gridView.draw();
     }
@@ -548,6 +566,7 @@ var Grid = /** @class */ (function () {
         }
         this.pathfinder = pathfinder;
         this.pathfinder.setGridModel(this.gridModel);
+        this.pathfinder.setStepDelay(this.stepDelay);
         this.setupPathfinderEvents();
     };
     Grid.prototype.runPathfinder = function () {
@@ -569,6 +588,7 @@ var Grid = /** @class */ (function () {
         }
         this.builder = builder;
         this.builder.setGridModel(this.gridModel);
+        this.builder.setStepDelay(this.stepDelay);
         this.setupBuilderEvents();
     };
     Grid.prototype.runBuilder = function () {
@@ -584,6 +604,13 @@ var Grid = /** @class */ (function () {
         this.gridModel.resetTiles();
         this.gridView.draw();
         this.builder.run();
+    };
+    Grid.prototype.setStepDelay = function (stepDelay) {
+        this.stepDelay = stepDelay;
+        if (this.builder != null)
+            this.builder.setStepDelay(stepDelay);
+        if (this.pathfinder != null)
+            this.pathfinder.setStepDelay(stepDelay);
     };
     Grid.prototype.setupEvents = function () {
         var _this = this;
@@ -1272,6 +1299,7 @@ var builderSelect;
 var generateButton;
 var pathfinderSelect;
 var findButton;
+var speedSlider;
 var resetButton;
 var resizeMessage;
 window.onload = function () {
@@ -1326,9 +1354,11 @@ function createControlBar() {
         return;
     if (!(findButton instanceof HTMLAnchorElement))
         return;
+    if (!(speedSlider instanceof HTMLInputElement))
+        return;
     if (!(resetButton instanceof HTMLAnchorElement))
         return;
-    controlBar = new ControlBar_1.ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, resetButton);
+    controlBar = new ControlBar_1.ControlBar(builderSelect, generateButton, pathfinderSelect, findButton, speedSlider, resetButton);
     controlBar.addBuilder('DFS (Maze)', new DFSMazeBuilder_1.DFSMazeBuilder());
     controlBar.addBuilder('BFS (Maze)', new BFSMazeBuilder_1.BFSMazeBuilder());
     controlBar.addPathfinder('BFS', new BFSPathfinder_1.BFSPathfinder());
@@ -1350,6 +1380,11 @@ function handleOnPathfinderChangeEvent(pathfinder) {
 function handleOnFindEvent() {
     if (grid != null)
         grid.runPathfinder();
+}
+function handleOnSpeedChange(speed) {
+    var stepDelay = Math.pow(50 - speed, 2);
+    if (grid != null)
+        grid.setStepDelay(stepDelay);
 }
 function handleOnResetEvent() {
     if (resizeMessage != null) {
@@ -1376,6 +1411,7 @@ function setupHtmlElements() {
     generateButton = document.getElementById('generate-button');
     pathfinderSelect = document.getElementById('pathfinder-select');
     findButton = document.getElementById('find-button');
+    speedSlider = document.getElementById('speed-slider');
     resetButton = document.getElementById('reset-button');
     resizeMessage = document.getElementById('resize-message');
     var resizeMessageYes = document.getElementById('resize-message-yes');
@@ -1401,6 +1437,9 @@ function setupControlBarEvents() {
     };
     controlBar.onfind = function () {
         handleOnFindEvent();
+    };
+    controlBar.onspeedchange = function (speed) {
+        handleOnSpeedChange(speed);
     };
     controlBar.onreset = function () {
         handleOnResetEvent();
@@ -1783,7 +1822,7 @@ var Pathfinder = /** @class */ (function () {
         this.running = false;
         this.exitFound = false;
         this.runningId = 0;
-        this.stepDelay = 50;
+        this.stepDelay = 0;
         this.unactivated = true;
         this.onstep = null;
         this.onpathstep = null;
@@ -1791,6 +1830,9 @@ var Pathfinder = /** @class */ (function () {
     Pathfinder.prototype.setGridModel = function (gridModel) {
         this.gridModel = gridModel;
         this.reset();
+    };
+    Pathfinder.prototype.setStepDelay = function (stepDelay) {
+        this.stepDelay = stepDelay;
     };
     Pathfinder.prototype.reset = function () {
         this.running = false;
